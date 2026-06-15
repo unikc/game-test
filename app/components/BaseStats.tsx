@@ -9,7 +9,7 @@ export default function BaseStats({ resources }: { resources: Resource[] }) {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {resources.map((resource, index) => (
-          <div key={index} className="bg-gray-700 rounded-lg p-3">
+          <div key={index} className="bg-gray-700 rounded-lg p-3 border border-gray-600">
             <div className="flex justify-between items-center mb-2">
               <span className="font-medium">{resource.name}</span>
               <span className="text-sm">{resource.amount}/{resource.max}</span>
