@@ -30,7 +30,7 @@ export default function EventModal({
         </div>
         
         <button
-          onClick={onClose}
+          onClick={() => setShowEventModal(false)}
           className="mt-6 w-full py-3 bg-gray-600 hover:bg-gray-500 rounded-lg transition-colors border border-gray-500"
         >
           Close

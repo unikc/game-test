@@ -15,6 +15,8 @@ type Survivor = {
   hope: number; // 0-100
   trust: number; // 0-100
   dream: string;
+  destination: string;
+  distanceToDestination: number; // days away
 };
 
 type Resource = {
@@ -40,6 +42,20 @@ type GameLogEntry = {
   timestamp: number;
 };
 
+type Memory = {
+  id: string;
+  survivorId: string;
+  description: string;
+  timestamp: number;
+};
+
+type JourneyNode = {
+  id: string;
+  name: string;
+  type: 'camp' | 'town' | 'school' | 'hospital' | 'harbor' | 'settlement';
+  connections: { nodeId: string; distance: number }[];
+};
+
 // Initial data
 const initialSurvivors: Survivor[] = [
   {
@@ -50,7 +66,9 @@ const initialSurvivors: Survivor[] = [
     life: 45,
     hope: 70,
     trust: 65,
-    dream: 'I want to see my old school one last time.'
+    dream: 'I want to see my old school one last time.',
+    destination: 'Old School',
+    distanceToDestination: 12
   },
   {
     id: '2',
@@ -60,7 +78,9 @@ const initialSurvivors: Survivor[] = [
     life: 32,
     hope: 40,
     trust: 80,
-    dream: 'I want to see the ocean.'
+    dream: 'I want to see the ocean.',
+    destination: 'Harbor',
+    distanceToDestination: 15
   },
   {
     id: '3',
@@ -70,7 +90,9 @@ const initialSurvivors: Survivor[] = [
     life: 28,
     hope: 55,
     trust: 75,
-    dream: 'I want to finish the bridge I started.'
+    dream: 'I want to finish the bridge I started.',
+    destination: 'Bridge Site',
+    distanceToDestination: 10
   },
   {
     id: '4',
@@ -80,7 +102,9 @@ const initialSurvivors: Survivor[] = [
     life: 38,
     hope: 60,
     trust: 90,
-    dream: 'I want to find my daughter.'
+    dream: 'I want to find my daughter.',
+    destination: 'Riverside Settlement',
+    distanceToDestination: 20
   },
   {
     id: '5',
@@ -90,7 +114,9 @@ const initialSurvivors: Survivor[] = [
     life: 25,
     hope: 30,
     trust: 50,
-    dream: 'I want to paint one more sunset.'
+    dream: 'I want to paint one more sunset.',
+    destination: 'Sunset Viewpoint',
+    distanceToDestination: 8
   }
 ];
 
@@ -328,6 +354,57 @@ const initialEvents: Event[] = [
   }
 ];
 
+const journeyMap: JourneyNode[] = [
+  {
+    id: 'camp',
+    name: 'Camp',
+    type: 'camp',
+    connections: [
+      { nodeId: 'town', distance: 3 },
+      { nodeId: 'school', distance: 5 }
+    ]
+  },
+  {
+    id: 'town',
+    name: 'Town',
+    type: 'town',
+    connections: [
+      { nodeId: 'school', distance: 4 },
+      { nodeId: 'hospital', distance: 6 }
+    ]
+  },
+  {
+    id: 'school',
+    name: 'Old School',
+    type: 'school',
+    connections: [
+      { nodeId: 'harbor', distance: 8 }
+    ]
+  },
+  {
+    id: 'hospital',
+    name: 'Hospital',
+    type: 'hospital',
+    connections: [
+      { nodeId: 'harbor', distance: 5 }
+    ]
+  },
+  {
+    id: 'harbor',
+    name: 'Harbor',
+    type: 'harbor',
+    connections: []
+  },
+  {
+    id: 'settlement',
+    name: 'Riverside Settlement',
+    type: 'settlement',
+    connections: [
+      { nodeId: 'camp', distance: 10 }
+    ]
+  }
+];
+
 export default function Home() {
   const [survivors, setSurvivors] = useState<Survivor[]>(initialSurvivors);
   const [resources, setResources] = useState<Resource[]>(initialResources);
@@ -339,6 +416,8 @@ export default function Home() {
     { id: '1', message: 'Welcome to Road to Ithaca', timestamp: Date.now() }
   ]);
   const [selectedSurvivor, setSelectedSurvivor] = useState<string | null>(null);
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [currentLocation, setCurrentLocation] = useState('Camp');
 
   // Add log entry
   const addLogEntry = (message: string) => {
@@ -394,14 +473,37 @@ export default function Home() {
   };
 
   const handleTravel = () => {
-    setResources(prev => 
-      prev.map(res => 
-        res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - 5) } : 
-        res
-      )
-    );
+    // Find the current location node
+    const currentNode = journeyMap.find(node => node.name === currentLocation);
     
-    addLogEntry('Traveled to a new location');
+    if (currentNode && currentNode.connections.length > 0) {
+      // Select a random destination
+      const randomConnection = currentNode.connections[Math.floor(Math.random() * currentNode.connections.length)];
+      
+      setResources(prev => 
+        prev.map(res => 
+          res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - randomConnection.distance) } : 
+          res
+        )
+      );
+      
+      // Update current location
+      setCurrentLocation(journeyMap.find(node => node.id === randomConnection.nodeId)?.name || '');
+      
+      // Update survivor distances
+      setSurvivors(prev => 
+        prev.map(survivor => {
+          if (survivor.distanceToDestination > 0) {
+            return { ...survivor, distanceToDestination: Math.max(0, survivor.distanceToDestination - randomConnection.distance) };
+          }
+          return survivor;
+        })
+      );
+      
+      addLogEntry(`Traveled to ${journeyMap.find(node => node.id === randomConnection.nodeId)?.name}`);
+    } else {
+      addLogEntry('No valid travel destination');
+    }
   };
 
   const handleTalk = () => {
@@ -448,6 +550,43 @@ export default function Home() {
     }
   }, [survivors]);
 
+  // Check for destination reached
+  useEffect(() => {
+    survivors.forEach(survivor => {
+      if (survivor.distanceToDestination === 0 && survivor.life > 0) {
+        // Survivor has reached their destination
+        const memory: Memory = {
+          id: Date.now().toString(),
+          survivorId: survivor.id,
+          description: `${survivor.name} reached ${survivor.destination}`,
+          timestamp: Date.now()
+        };
+        
+        setMemories(prev => [...prev, memory]);
+        
+        // Update survivor stats
+        setSurvivors(prev => 
+          prev.map(s => 
+            s.id === survivor.id 
+              ? { ...s, hope: Math.min(100, s.hope + 50), trust: Math.min(100, s.trust + 30) } 
+              : s
+          )
+        );
+        
+        addLogEntry(`${survivor.name} reached their destination! Hope and trust increased.`);
+      }
+    });
+  }, [survivors]);
+
+  // Calculate journey progress for the current survivor
+  const calculateJourneyProgress = (survivor: Survivor) => {
+    if (survivor.distanceToDestination === 0) return 100;
+    
+    // Find the total distance to destination from camp
+    const totalDistance = 25; // Approximate total distance for calculation
+    return Math.max(0, Math.min(100, ((totalDistance - survivor.distanceToDestination) / totalDistance) * 100));
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       {/* Top Status Bar */}
@@ -484,10 +623,34 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Center Column - Camp Status */}
+        {/* Center Column - Journey View */}
         <div className="lg:col-span-1">
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
-            <CampStatus resources={resources} />
+            <h2 className="text-xl font-semibold mb-3">Journey</h2>
+            
+            <div className="bg-gray-700 rounded-lg p-4 mb-4">
+              <div className="text-center mb-3">
+                <h3 className="text-lg font-bold">{currentLocation}</h3>
+              </div>
+              
+              <div className="space-y-4">
+                {survivors.map(survivor => (
+                  <div key={survivor.id} className="bg-gray-600 rounded-lg p-3">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium">{survivor.name}</span>
+                      <span>{survivor.distanceToDestination} days</span>
+                    </div>
+                    <div className="w-full bg-gray-500 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full" 
+                        style={{ width: `${calculateJourneyProgress(survivor)}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-300 mt-1">{survivor.destination}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
             
             <div className="mt-6">
               <h2 className="text-xl font-semibold mb-3">Actions</h2>
@@ -521,11 +684,30 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Column - Story Feed */}
+        {/* Right Column - Memories and Story Feed */}
         <div className="lg:col-span-1">
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
+            <h2 className="text-xl font-semibold mb-3">Memories</h2>
+            <div className="space-y-3 max-h-[300px] overflow-y-auto mb-6">
+              {memories.length > 0 ? (
+                memories.map(memory => (
+                  <div 
+                    key={memory.id} 
+                    className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm"
+                  >
+                    <p>{memory.description}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(memory.timestamp).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-center py-4">No memories yet</p>
+              )}
+            </div>
+            
             <h2 className="text-xl font-semibold mb-3">Story Feed</h2>
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
               {gameLog.map(entry => (
                 <div 
                   key={entry.id} 

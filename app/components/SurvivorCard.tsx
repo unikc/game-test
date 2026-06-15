@@ -62,6 +62,7 @@ export default function SurvivorCard({
           </div>
           
           <p className="mt-2 text-sm italic text-gray-300">"{survivor.dream}"</p>
+          <p className="text-xs text-gray-400 mt-1">Destination: {survivor.destination}</p>
         </div>
       </div>
     </div>
