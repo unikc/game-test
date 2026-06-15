@@ -5,8 +5,8 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Cozy Apocalypse',
-  description: 'A cozy post-apocalyptic survival game',
+  title: 'Road to Ithaca',
+  description: 'An emotional survival game prototype',
 };
 
 export default function RootLayout({
