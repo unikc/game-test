@@ -91,13 +91,13 @@ export default function Home() {
   
   const [mapNodes, setMapNodes] = useState([
     { id: 'camp', name: 'Camp', discovered: true, visited: true, emoji: '🏕️', connectedNodes: ['forest', 'hospital', 'farm'], x: 50, y: 30, remainingSupplies: null },
-    { id: 'forest', name: 'Forest', discovered: false, visited: false, emoji: '🌲', connectedNodes: ['camp', 'riverside'], x: 20, y: 30, remainingSupplies: 50 },
-    { id: 'hospital', name: 'Hospital', discovered: false, visited: false, emoji: '✚', connectedNodes: ['camp'], x: 80, y: 30, remainingSupplies: 40 },
-    { id: 'school', name: 'Old School', discovered: false, visited: false, emoji: '🏫', connectedNodes: ['camp'], x: 50, y: 10, remainingSupplies: 30 },
-    { id: 'farm', name: 'Farm', discovered: false, visited: false, emoji: '🌾', connectedNodes: ['camp', 'riverside'], x: 40, y: 55, remainingSupplies: 60 },
-    { id: 'riverside', name: 'Riverside', discovered: false, visited: false, emoji: '🌊', connectedNodes: ['farm', 'bridge'], x: 25, y: 80, remainingSupplies: 45 },
-    { id: 'bridge', name: 'Bridge Site', discovered: false, visited: false, emoji: '🌉', connectedNodes: ['riverside', 'harbor'], x: 60, y: 55, remainingSupplies: 35 },
-    { id: 'harbor', name: 'Harbor', discovered: false, visited: false, emoji: '⚓', connectedNodes: ['bridge'], x: 75, y: 80, remainingSupplies: 55 }
+    { id: 'forest', name: 'Forest', discovered: false, visited: false, emoji: '🌲', connectedNodes: ['camp', 'riverside'], x: 20, y: 30, remainingSupplies: 50, danger: 'low' },
+    { id: 'hospital', name: 'Hospital', discovered: false, visited: false, emoji: '✚', connectedNodes: ['camp'], x: 80, y: 30, remainingSupplies: 40, danger: 'high' },
+    { id: 'school', name: 'Old School', discovered: false, visited: false, emoji: '🏫', connectedNodes: ['camp'], x: 50, y: 10, remainingSupplies: 30, danger: 'low' },
+    { id: 'farm', name: 'Farm', discovered: false, visited: false, emoji: '🌾', connectedNodes: ['camp', 'riverside'], x: 40, y: 55, remainingSupplies: 60, danger: 'low' },
+    { id: 'riverside', name: 'Riverside', discovered: false, visited: false, emoji: '🌊', connectedNodes: ['farm', 'bridge'], x: 25, y: 80, remainingSupplies: 45, danger: 'medium' },
+    { id: 'bridge', name: 'Bridge Site', discovered: false, visited: false, emoji: '🌉', connectedNodes: ['riverside', 'harbor'], x: 60, y: 55, remainingSupplies: 35, danger: 'medium' },
+    { id: 'harbor', name: 'Harbor', discovered: false, visited: false, emoji: '⚓', connectedNodes: ['bridge'], x: 75, y: 80, remainingSupplies: 55, danger: 'medium' }
   ]);
   
   const [currentLocation, setCurrentLocation] = useState('camp');
@@ -127,6 +127,14 @@ export default function Home() {
   // Helper function to get node by ID
   const getNodeById = (id: string) => {
     return mapNodes.find(node => node.id === id);
+  };
+
+  // Get survivors at a location
+  const getSurvivorsAtLocation = (locationId: string) => {
+    return survivors.filter(survivor => 
+      !survivor.dead && 
+      (survivor.destination === getNodeById(locationId)?.name || locationId === currentLocation)
+    ).map(s => s.name.charAt(0));
   };
 
   // Action functions
@@ -604,6 +612,43 @@ export default function Home() {
     );
   }
 
+  // Get danger color
+  const getDangerColor = (danger: string) => {
+    switch(danger) {
+      case 'low': return 'text-green-400';
+      case 'medium': return 'text-yellow-400';
+      case 'high': return 'text-red-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  // Format story events as timeline
+  const formatStoryEvents = () => {
+    const formattedEvents = [];
+    let currentDay = -1;
+    
+    for (let i = currentStoryEvents.length - 1; i >= 0; i--) {
+      const event = currentStoryEvents[i];
+      
+      // Check if this is a day marker
+      if (event.startsWith('Day ')) {
+        formattedEvents.push(<p key={i} className="font-bold text-yellow-300">{event}</p>);
+        continue;
+      }
+      
+      // If we're at a new day, add the day header
+      const eventDay = Math.floor((gameTime - 24 + i) / 24);
+      if (eventDay !== currentDay) {
+        currentDay = eventDay;
+        formattedEvents.push(<p key={`day-${currentDay}`} className="font-bold text-yellow-300">Day {currentDay + 1}</p>);
+      }
+      
+      formattedEvents.push(<p key={i} className="ml-2">{event}</p>);
+    }
+    
+    return formattedEvents;
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-slate-950 text-white flex flex-col p-4 gap-3">
       {/* Top Bar */}
@@ -620,6 +665,7 @@ export default function Home() {
           </div>
           <div className="text-right">
             <p className="text-sm">Winter in: {winterCountdown} days</p>
+            <p className="text-sm">Dreams: {survivors.filter(s => s.dreamFulfilled).length}/{survivors.length}</p>
           </div>
         </div>
       </header>
@@ -661,12 +707,54 @@ export default function Home() {
       </section>
 
       {/* Main Content */}
-      <main className="flex-1 min-h-0 grid grid-cols-[1fr_320px] gap-3">
+      <main className="flex-1 min-h-0 grid grid-cols-[2fr_1fr] gap-3">
         {/* Map Panel */}
-        <section className="bg-gray-800 rounded-lg p-4">
+        <section className="bg-gray-800 rounded-lg p-4 relative">
           <h2 className="text-xl font-semibold mb-4">Map</h2>
           
           <div className="relative w-full h-[600px] bg-gray-900 rounded-lg overflow-hidden">
+            {/* SVG connections */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+              {/* Camp connections */}
+              <line x1={`${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'camp')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'forest')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'forest')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              <line x1={`${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'camp')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'hospital')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              <line x1={`${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'camp')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'farm')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              
+              {/* Forest connection */}
+              <line x1={`${(mapNodes.find(n => n.id === 'forest')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'forest')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              
+              {/* Farm connection */}
+              <line x1={`${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'farm')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              <line x1={`${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'farm')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              
+              {/* Riverside connection */}
+              <line x1={`${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              
+              {/* Bridge connection */}
+              <line x1={`${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'harbor')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+              
+              {/* School connection */}
+              <line x1={`${(mapNodes.find(n => n.id === 'school')?.x ?? 0)}%`} y1={`${(mapNodes.find(n => n.id === 'school')?.y ?? 0)}%`} 
+                    x2={`${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`} y2={`${(mapNodes.find(n => n.id === 'camp')?.y ?? 0)}%`}
+                    stroke="gray" strokeWidth="1" />
+            </svg>
+            
             {/* Map nodes */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-full h-full">
@@ -686,8 +774,14 @@ export default function Home() {
                 >
                   🏫
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('school')?.x ?? 0)}%`, top: `${(getNodeById('school')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Old School
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('school')?.danger || '')}`} style={{ left: `${(getNodeById('school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('school')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('school').join('')}
                 </div>
                 
                 {/* Forest */}
@@ -706,8 +800,14 @@ export default function Home() {
                 >
                   🌲
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('forest')?.x ?? 0)}%`, top: `${(getNodeById('forest')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Forest
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('forest')?.danger || '')}`} style={{ left: `${(getNodeById('forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('forest')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('forest').join('')}
                 </div>
                 
                 {/* Camp */}
@@ -726,8 +826,14 @@ export default function Home() {
                 >
                   🏕️
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('camp')?.x ?? 0)}%`, top: `${(getNodeById('camp')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Camp
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('camp')?.danger || '')}`} style={{ left: `${(getNodeById('camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('camp')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('camp').join('')}
                 </div>
                 
                 {/* Hospital */}
@@ -746,8 +852,14 @@ export default function Home() {
                 >
                   ✚
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('hospital')?.x ?? 0)}%`, top: `${(getNodeById('hospital')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Hospital
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('hospital')?.danger || '')}`} style={{ left: `${(getNodeById('hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('hospital')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('hospital').join('')}
                 </div>
                 
                 {/* Farm */}
@@ -766,8 +878,14 @@ export default function Home() {
                 >
                   🌾
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('farm')?.x ?? 0)}%`, top: `${(getNodeById('farm')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Farm
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('farm')?.danger || '')}`} style={{ left: `${(getNodeById('farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('farm')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('farm').join('')}
                 </div>
                 
                 {/* Bridge Site */}
@@ -786,8 +904,14 @@ export default function Home() {
                 >
                   🌉
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('bridge')?.x ?? 0)}%`, top: `${(getNodeById('bridge')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Bridge Site
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('bridge')?.danger || '')}`} style={{ left: `${(getNodeById('bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('bridge')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('bridge').join('')}
                 </div>
                 
                 {/* Riverside */}
@@ -806,8 +930,14 @@ export default function Home() {
                 >
                   🌊
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('riverside')?.x ?? 0)}%`, top: `${(getNodeById('riverside')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Riverside
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('riverside')?.danger || '')}`} style={{ left: `${(getNodeById('riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('riverside')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('riverside').join('')}
                 </div>
                 
                 {/* Harbor */}
@@ -826,8 +956,14 @@ export default function Home() {
                 >
                   ⚓
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('harbor')?.x ?? 0)}%`, top: `${(getNodeById('harbor')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Harbor
+                </div>
+                <div className={`absolute text-xs font-bold ${getDangerColor(getNodeById('harbor')?.danger || '')}`} style={{ left: `${(getNodeById('harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0) - 20}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  ⚠ {getNodeById('harbor')?.danger}
+                </div>
+                <div className="absolute text-xs" style={{ left: `${(getNodeById('harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0) - 32}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                  {getSurvivorsAtLocation('harbor').join('')}
                 </div>
               </div>
             </div>
@@ -856,51 +992,40 @@ export default function Home() {
         </section>
 
         {/* Location Panel */}
-        <aside className="bg-gray-800 rounded-lg p-4">
+        <aside className="bg-gray-800 rounded-lg p-4 flex flex-col">
           <h2 className="text-xl font-semibold mb-4">Location</h2>
           
-          <div>
-            <h3 className="text-lg font-bold mb-2">{getNodeById(currentLocation)?.name || currentLocation}</h3>
-            
-            {currentLocation === 'camp' ? (
-              <p className="text-gray-300 mb-4">Your base of operations. A small shelter built from scavenged materials.</p>
-            ) : currentLocation === 'forest' ? (
-              <p className="text-gray-300 mb-4">A dense forest with tall trees and thick undergrowth. The air is thick with mystery.</p>
-            ) : currentLocation === 'hospital' ? (
-              <p className="text-gray-300 mb-4">A crumbling hospital building with broken windows and a faded sign.</p>
-            ) : currentLocation === 'school' ? (
-              <p className="text-gray-300 mb-4">An old school building with broken windows and a faded sign.</p>
-            ) : currentLocation === 'farm' ? (
-              <p className="text-gray-300 mb-4">An abandoned farm with overgrown fields and broken fences.</p>
-            ) : currentLocation === 'riverside' ? (
-              <p className="text-gray-300 mb-4">A quiet riverside with a small bridge and clear water.</p>
-            ) : currentLocation === 'bridge' ? (
-              <p className="text-gray-300 mb-4">A site where a bridge was built, now overgrown with vegetation.</p>
-            ) : currentLocation === 'harbor' ? (
-              <p className="text-gray-300 mb-4">A quiet harbor with boats and a lighthouse.</p>
-            ) : (
-              <p className="text-gray-300 mb-4">Unknown location.</p>
-            )}
-            
+          <div className="flex-1 overflow-y-auto">
             <div className="mb-4">
-              <h4 className="font-semibold mb-2">Story Events</h4>
-              {currentStoryEvents.length > 0 ? (
-                <div className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm">
-                  {currentStoryEvents.map((event, index) => (
-                    <p key={index} className="mb-1 last:mb-0">{event}</p>
-                  ))}
-                </div>
+              <h3 className="text-lg font-bold mb-2">{getNodeById(currentLocation)?.name || currentLocation}</h3>
+              
+              {currentLocation === 'camp' ? (
+                <p className="text-gray-300 mb-4">Your base of operations. A small shelter built from scavenged materials.</p>
+              ) : currentLocation === 'forest' ? (
+                <p className="text-gray-300 mb-4">A dense forest with tall trees and thick undergrowth. The air is thick with mystery.</p>
+              ) : currentLocation === 'hospital' ? (
+                <p className="text-gray-300 mb-4">A crumbling hospital building with broken windows and a faded sign.</p>
+              ) : currentLocation === 'school' ? (
+                <p className="text-gray-300 mb-4">An old school building with broken windows and a faded sign.</p>
+              ) : currentLocation === 'farm' ? (
+                <p className="text-gray-300 mb-4">An abandoned farm with overgrown fields and broken fences.</p>
+              ) : currentLocation === 'riverside' ? (
+                <p className="text-gray-300 mb-4">A quiet riverside with a small bridge and clear water.</p>
+              ) : currentLocation === 'bridge' ? (
+                <p className="text-gray-300 mb-4">A site where a bridge was built, now overgrown with vegetation.</p>
+              ) : currentLocation === 'harbor' ? (
+                <p className="text-gray-300 mb-4">A quiet harbor with boats and a lighthouse.</p>
               ) : (
-                <p className="text-gray-400 text-sm">No events yet</p>
+                <p className="text-gray-300 mb-4">Unknown location.</p>
               )}
-            </div>
-            
-            <div className="mb-4">
-              <h4 className="font-semibold mb-2">Destination</h4>
-              <p className="text-gray-300">{survivors.find(s => s.name === getNodeById(currentLocation)?.name || currentLocation)?.destination || 'No destination'}</p>
-            </div>
-            
-            {getNodeById(currentLocation)?.remainingSupplies !== null && (
+              
+              <div className="mb-4">
+                <h4 className="font-semibold mb-2">Danger Level</h4>
+                <p className={`font-bold ${getDangerColor(getNodeById(currentLocation)?.danger || '')}`}>
+                  {getNodeById(currentLocation)?.danger || 'Unknown'}
+                </p>
+              </div>
+              
               <div className="mb-4">
                 <h4 className="font-semibold mb-2">Supplies</h4>
                 <p className="text-gray-300">
@@ -909,7 +1034,41 @@ export default function Home() {
                     : `Remaining: ${getNodeById(currentLocation)?.remainingSupplies}`}
                 </p>
               </div>
-            )}
+              
+              <div className="mb-4">
+                <h4 className="font-semibold mb-2">Connected Locations</h4>
+                {getNodeById(currentLocation)?.connectedNodes.map(nodeId => {
+                  const node = getNodeById(nodeId);
+                  return (
+                    <div key={nodeId} className="flex justify-between text-sm">
+                      <span>{node?.name}</span>
+                      <span>{travelTimes[currentLocation]?.[nodeId] || 0}h</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2">Dreams</h4>
+              <div className="space-y-1">
+                {survivors.map(survivor => (
+                  <div key={survivor.id} className="flex items-center text-sm">
+                    <span className={`mr-2 ${survivor.dreamFulfilled ? 'text-green-400' : 'text-gray-300'}`}>
+                      {survivor.dreamFulfilled ? '✓' : '□'}
+                    </span>
+                    <span>{survivor.name} → {survivor.destination}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2">Story Events</h4>
+              <div className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm max-h-60 overflow-y-auto">
+                {formatStoryEvents()}
+              </div>
+            </div>
           </div>
         </aside>
       </main>
