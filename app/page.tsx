@@ -25,7 +25,8 @@ export default function Home() {
       distanceToDestination: 12,
       dead: false,
       fulfilled: false,
-      dreamFulfilled: false
+      dreamFulfilled: false,
+      health: 100
     },
     {
       id: '2',
@@ -40,7 +41,8 @@ export default function Home() {
       distanceToDestination: 15,
       dead: false,
       fulfilled: false,
-      dreamFulfilled: false
+      dreamFulfilled: false,
+      health: 100
     },
     {
       id: '3',
@@ -55,7 +57,8 @@ export default function Home() {
       distanceToDestination: 10,
       dead: false,
       fulfilled: false,
-      dreamFulfilled: false
+      dreamFulfilled: false,
+      health: 100
     },
     {
       id: '4',
@@ -70,7 +73,8 @@ export default function Home() {
       distanceToDestination: 20,
       dead: false,
       fulfilled: false,
-      dreamFulfilled: false
+      dreamFulfilled: false,
+      health: 100
     },
     {
       id: '5',
@@ -85,7 +89,8 @@ export default function Home() {
       distanceToDestination: 8,
       dead: false,
       fulfilled: false,
-      dreamFulfilled: false
+      dreamFulfilled: false,
+      health: 100
     }
   ]);
   
@@ -106,6 +111,7 @@ export default function Home() {
   const [gameOver, setGameOver] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [expandedSurvivor, setExpandedSurvivor] = useState<string | null>(null);
+  const [boatParts, setBoatParts] = useState(0);
 
   // Travel times between locations
   const travelTimes = {
@@ -158,29 +164,30 @@ export default function Home() {
     let medicineChange = 0;
     let moraleChange = 0;
     let hopeChange = 0;
+    let healthChange = 0;
     let injury = false;
     let infection = false;
     
     const events = {
       'forest': [
-        { text: "The group found edible berries in the forest.", food: 10, medicine: 0, morale: 0, chance: 0.6 },
-        { text: "They discovered a hidden cache of food.", food: 5, medicine: 0, morale: 0, chance: 0.2 },
-        { text: "They got injured while exploring.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.2 }
+        { text: "The group found edible berries in the forest.", food: 8, medicine: 0, morale: 0, chance: 0.5 },
+        { text: "They encountered a wild animal.", food: 0, medicine: 0, morale: 0, health: -10, injury: true, chance: 0.3 },
+        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.2 }
       ],
       'hospital': [
-        { text: "They found medicine in an old pharmacy.", food: 0, medicine: 10, morale: 0, chance: 0.5 },
-        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.3 },
-        { text: "They caught an infection from a broken syringe.", food: 0, medicine: 0, morale: -5, infection: true, chance: 0.2 }
+        { text: "They found a medicine cache.", food: 0, medicine: 10, morale: 0, chance: 0.5 },
+        { text: "They caught an infection from a broken syringe.", food: 0, medicine: 0, morale: -5, health: -20, infection: true, chance: 0.3 },
+        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.2 }
       ],
       'farm': [
-        { text: "They found supplies in the abandoned farm.", food: 15, medicine: 0, morale: 0, chance: 0.7 },
-        { text: "They found some old food.", food: 5, medicine: 0, morale: 0, chance: 0.2 },
-        { text: "They got injured while working.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.1 }
+        { text: "They found supplies in the abandoned farm.", food: 15, medicine: 0, morale: 0, chance: 0.6 },
+        { text: "They encountered broken machinery.", food: 0, medicine: 0, morale: 0, health: -5, injury: true, chance: 0.3 },
+        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.1 }
       ],
       'harbor': [
-        { text: "They found some useful items at the harbor.", food: 0, medicine: 0, morale: 5, chance: 0.5 },
-        { text: "They found fuel for their supplies.", food: 0, medicine: 0, morale: 0, chance: 0.3 },
-        { text: "They encountered a dangerous situation.", food: 0, medicine: 0, morale: -10, chance: 0.2 }
+        { text: "They found a fuel cache.", food: 0, medicine: 0, morale: 5, chance: 0.4 },
+        { text: "They found a boat clue.", food: 0, medicine: 0, morale: 0, chance: 0.3 },
+        { text: "They encountered dangerous scavengers.", food: 0, medicine: 0, morale: -10, health: -15, injury: true, chance: 0.3 }
       ],
       'school': [
         { text: "They found old memories in the school building.", food: 0, medicine: 0, morale: 10, chance: 0.6 },
@@ -188,9 +195,9 @@ export default function Home() {
         { text: "They found a hidden message in the school.", food: 0, medicine: 0, morale: 5, chance: 0.1 }
       ],
       'bridge': [
-        { text: "They found scrap materials at the bridge site.", food: 0, medicine: 0, morale: 0, chance: 0.4 },
-        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.4 },
-        { text: "They got injured while working on the bridge.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.2 }
+        { text: "They found construction tools.", food: 0, medicine: 5, morale: 0, chance: 0.5 },
+        { text: "They encountered a collapsed structure.", food: 0, medicine: 0, morale: 0, health: -15, injury: true, chance: 0.4 },
+        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.1 }
       ],
       'riverside': [
         { text: "They found tracks in the mud by the river.", food: 0, medicine: 0, morale: 0, chance: 0.5 },
@@ -200,7 +207,7 @@ export default function Home() {
       'camp': [
         { text: "They explored around the camp.", food: 0, medicine: 0, morale: 0, chance: 0.6 },
         { text: "They found some old supplies.", food: 5, medicine: 0, morale: 0, chance: 0.3 },
-        { text: "They got injured while exploring.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.1 }
+        { text: "They got injured while exploring.", food: 0, medicine: 0, morale: 0, health: -10, injury: true, chance: 0.1 }
       ]
     };
     
@@ -224,6 +231,7 @@ export default function Home() {
         foodChange = selectedEvent.food || 0;
         medicineChange = selectedEvent.medicine || 0;
         moraleChange = selectedEvent.morale || 0;
+        healthChange = selectedEvent.health || 0;
         injury = selectedEvent.injury || false;
         infection = selectedEvent.infection || false;
         
@@ -236,6 +244,23 @@ export default function Home() {
             return res;
           })
         );
+        
+        // Apply health changes to survivors
+        if (healthChange !== 0) {
+          setSurvivors(prev => 
+            prev.map(survivor => {
+              if (!survivor.dead) {
+                const newHealth = Math.max(0, survivor.health + healthChange);
+                if (newHealth <= 0) {
+                  setCurrentStoryEvents(prevEvents => [...prevEvents, `${survivor.name} died during an expedition.`].slice(-10));
+                  return { ...survivor, dead: true, health: 0 };
+                }
+                return { ...survivor, health: newHealth };
+              }
+              return survivor;
+            })
+          );
+        }
         
         // Handle injury or infection
         if (injury || infection) {
@@ -321,6 +346,7 @@ export default function Home() {
             node.id === randomUndiscovered ? { ...node, discovered: true } : node
           )
         );
+        setCurrentStoryEvents(prev => [...prev, `While exploring ${destinationName}, you discovered ${getNodeById(randomUndiscovered)?.name}.`].slice(-10));
       }
     }
     
@@ -420,7 +446,14 @@ export default function Home() {
     const randomDialogue = survivorDialogues[Math.floor(Math.random() * survivorDialogues.length)];
     
     // Increase hope
-    const hopeIncrease = Math.floor(Math.random() * 3) + 1; // 1-3
+    let hopeIncrease = Math.floor(Math.random() * 3) + 1; // 1-3
+    
+    // Apply personality bonuses
+    if (randomSurvivor.personality === 'Compassionate') {
+      hopeIncrease += 2;
+    } else if (randomSurvivor.personality === 'Creative') {
+      hopeIncrease += 3;
+    }
     
     setSurvivors(prev => 
       prev.map(s => {
@@ -457,6 +490,30 @@ export default function Home() {
         res
       )
     );
+    
+    // Restore health if medicine available
+    const aliveSurvivors = survivors.filter(s => !s.dead);
+    if (aliveSurvivors.length > 0 && resources[1].amount > 0) {
+      setResources(prev => 
+        prev.map(res => 
+          res.name === 'Medicine' ? { ...res, amount: Math.max(0, res.amount - 1) } : 
+          res
+        )
+      );
+      
+      // Find a survivor to heal
+      const randomSurvivor = aliveSurvivors[Math.floor(Math.random() * aliveSurvivors.length)];
+      setSurvivors(prev => 
+        prev.map(s => {
+          if (s.name === randomSurvivor.name) {
+            return { ...s, health: Math.min(100, s.health + 15) };
+          }
+          return s;
+        })
+      );
+      
+      setCurrentStoryEvents(prev => [...prev, `${randomSurvivor.name} was healed by medicine.`].slice(-10));
+    }
     
     // Add story event
     setCurrentStoryEvents(prev => [...prev, "The group rested for the night."].slice(-10));
@@ -500,13 +557,28 @@ export default function Home() {
     if (resources[0].amount <= 0) {
       setResources(prev => 
         prev.map(res => 
-          res.name === 'Morale' ? { ...res, amount: Math.max(0, res.amount - 10) } : 
+          res.name === 'Morale' ? { ...res, amount: Math.max(0, res.amount - 5) } : 
           res
         )
       );
       
+      // Apply health loss to survivors due to hunger
+      setSurvivors(prev => 
+        prev.map(survivor => {
+          if (!survivor.dead) {
+            const newHealth = Math.max(0, survivor.health - 10);
+            if (newHealth <= 0) {
+              setCurrentStoryEvents(prevEvents => [...prevEvents, `${survivor.name} died from hunger.`].slice(-10));
+              return { ...survivor, dead: true, health: 0 };
+            }
+            return { ...survivor, health: newHealth };
+          }
+          return survivor;
+        })
+      );
+      
       // If morale is 0, random survivor loses hope
-      if (resources[1].amount <= 0) {
+      if (resources[2].amount <= 0) {
         const aliveSurvivors = survivors.filter(s => !s.dead);
         if (aliveSurvivors.length > 0) {
           const randomSurvivor = aliveSurvivors[Math.floor(Math.random() * aliveSurvivors.length)];
@@ -575,6 +647,30 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // Check for win condition
+  useEffect(() => {
+    if (gameOver) return;
+    
+    const aliveSurvivors = survivors.filter(s => !s.dead).length;
+    const harborDiscovered = mapNodes.find(n => n.id === 'harbor')?.discovered;
+    const reachedHarbor = survivors.some(s => s.destination === 'Harbor' && s.fulfilled);
+    
+    if (aliveSurvivors >= 3 && harborDiscovered && reachedHarbor) {
+      setGameOver(true);
+      setShowSummary(true);
+    }
+  }, [survivors, mapNodes, gameOver]);
+
+  // Check for lose condition
+  useEffect(() => {
+    const aliveSurvivors = survivors.filter(s => !s.dead).length;
+    
+    if (aliveSurvivors === 0 || winterCountdown <= 0) {
+      setGameOver(true);
+      setShowSummary(true);
+    }
+  }, [survivors, winterCountdown, gameOver]);
+
   // Render summary screen if game over
   if (showSummary) {
     const survivorsAlive = survivors.filter(s => !s.dead).length;
@@ -582,8 +678,9 @@ export default function Home() {
     
     return (
       <div className="h-screen overflow-hidden bg-slate-950 text-white flex flex-col items-center justify-center p-4 gap-6">
-        <h1 className="text-3xl font-bold">Game Over</h1>
-        <p className="text-xl">Winter has arrived</p>
+        <h1 className="text-3xl font-bold">
+          {winterCountdown <= 0 ? "The Winter Came" : "You Escaped"}
+        </h1>
         
         <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
           <h2 className="text-xl font-semibold mb-4">Summary</h2>
@@ -592,6 +689,9 @@ export default function Home() {
             <p>Days survived: {Math.floor(gameTime / 24)}</p>
             <p>Survivors alive: {survivorsAlive}/5</p>
             <p>Destinations fulfilled: {destinationsFulfilled}/5</p>
+            <p>Food remaining: {resources[0].amount}</p>
+            <p>Medicine remaining: {resources[1].amount}</p>
+            <p>Boat parts: {boatParts}/3</p>
             
             <h3 className="font-semibold mt-4">Major Events:</h3>
             <div className="bg-gray-700 rounded-lg p-3 text-sm">
@@ -666,6 +766,7 @@ export default function Home() {
           <div className="text-right">
             <p className="text-sm">Winter in: {winterCountdown} days</p>
             <p className="text-sm">Dreams: {survivors.filter(s => s.dreamFulfilled).length}/{survivors.length}</p>
+            <p className="text-sm">Boat Parts: {boatParts}/3</p>
           </div>
         </div>
       </header>
