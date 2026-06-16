@@ -776,33 +776,35 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-3">Map</h2>
             
             <div className="relative bg-gray-900 rounded-lg h-[500px] border border-gray-700 overflow-hidden">
-              {/* Roads */}
-              {mapNodes.map(node => (
-                node.connectedNodes.map(connectedId => {
-                  const connectedNode = mapNodes.find(n => n.id === connectedId);
-                  if (!connectedNode) return null;
-                  
-                  return (
-                    <svg key={`${node.id}-${connectedId}`} className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                      <line 
-                        x1={`${node.x}%`} 
-                        y1={`${node.y}%`} 
-                        x2={`${connectedNode.x}%`} 
-                        y2={`${connectedNode.y}%`} 
-                        stroke="#6b7280" 
-                        strokeWidth="2" 
-                        strokeDasharray="5,5"
-                      />
-                    </svg>
-                  );
-                })
-              ))}
+              {/* Roads - rendered first to be behind nodes */}
+              <div className="absolute inset-0 pointer-events-none">
+                {mapNodes.map(node => (
+                  node.connectedNodes.map(connectedId => {
+                    const connectedNode = mapNodes.find(n => n.id === connectedId);
+                    if (!connectedNode) return null;
+                    
+                    return (
+                      <svg key={`${node.id}-${connectedId}`} className="absolute top-0 left-0 w-full h-full">
+                        <line 
+                          x1={`${node.x}%`} 
+                          y1={`${node.y}%`} 
+                          x2={`${connectedNode.x}%`} 
+                          y2={`${connectedNode.y}%`} 
+                          stroke="#6b7280" 
+                          strokeWidth="2" 
+                          strokeDasharray="5,5"
+                        />
+                      </svg>
+                    );
+                  })
+                ))}
+              </div>
               
               {/* Nodes */}
               {mapNodes.map(node => (
                 <button
                   key={node.id}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center ${
+                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center z-10 ${
                     node.name === currentLocation 
                       ? 'bg-blue-600 border-2 border-blue-400 ring-2 ring-blue-500' 
                       : node.discovered 
@@ -830,7 +832,7 @@ export default function Home() {
               {/* Current location indicator */}
               {currentNode && (
                 <div 
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center"
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center z-20"
                   style={{ left: `${currentNode.x}%`, top: `${currentNode.y - 5}%` }}
                 >
                   <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
