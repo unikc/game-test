@@ -95,7 +95,7 @@ export default function Home() {
     { id: 'harbor', name: 'Harbor', discovered: false, visited: false, emoji: '⚓', connectedNodes: ['bridge'], x: 75, y: 80 }
   ]);
   
-  const [currentLocation, setCurrentLocation] = useState('Camp');
+  const [currentLocation, setCurrentLocation] = useState('camp');
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
   const [currentStoryEvents, setCurrentStoryEvents] = useState<string[]>([]);
   const [gameOver, setGameOver] = useState(false);
@@ -104,19 +104,24 @@ export default function Home() {
 
   // Travel times between locations
   const travelTimes = {
-    'Camp': { 
-      'Forest': 2, 
-      'Hospital': 2, 
-      'Farm': 1,
-      'Old School': 5
+    'camp': { 
+      'forest': 2, 
+      'hospital': 2, 
+      'farm': 1,
+      'school': 5
     },
-    'Forest': { 'Camp': 2 },
-    'Hospital': { 'Camp': 2 },
-    'Old School': { 'Camp': 5 },
-    'Farm': { 'Camp': 1, 'Riverside': 3 },
-    'Riverside': { 'Farm': 3, 'Bridge Site': 2 },
-    'Bridge Site': { 'Riverside': 2, 'Harbor': 4 },
-    'Harbor': { 'Bridge Site': 4 }
+    'forest': { 'camp': 2 },
+    'hospital': { 'camp': 2 },
+    'school': { 'camp': 5 },
+    'farm': { 'camp': 1, 'riverside': 3 },
+    'riverside': { 'farm': 3, 'bridge': 2 },
+    'bridge': { 'riverside': 2, 'harbor': 4 },
+    'harbor': { 'bridge': 4 }
+  };
+
+  // Helper function to get node by ID
+  const getNodeById = (id: string) => {
+    return mapNodes.find(node => node.id === id);
   };
 
   // Action functions
@@ -132,35 +137,35 @@ export default function Home() {
     let hopeChange = 0;
     
     const events = {
-      'Forest': [
+      'forest': [
         { text: "The group found edible berries in the forest.", food: 10, medicine: 0, morale: 0 },
         { text: "They discovered a hidden cache of food.", food: 5, medicine: 0, morale: 0 }
       ],
-      'Hospital': [
+      'hospital': [
         { text: "They found medicine in an old pharmacy.", food: 0, medicine: 3, morale: 0 },
         { text: "The hospital was full of strange sounds.", food: 0, medicine: 0, morale: 0 }
       ],
-      'Farm': [
+      'farm': [
         { text: "They found supplies in the abandoned farm.", food: 15, medicine: 0, morale: 0 },
         { text: "The fields were overgrown with wild plants.", food: 0, medicine: 0, morale: 0 }
       ],
-      'Harbor': [
+      'harbor': [
         { text: "They watched a beautiful sunset at the harbor.", food: 0, medicine: 0, morale: 10 },
         { text: "The ocean was calm and peaceful.", food: 0, medicine: 0, morale: 0 }
       ],
-      'Old School': [
+      'school': [
         { text: "They found old memories in the school building.", food: 0, medicine: 0, morale: 10 },
         { text: "The classrooms were filled with dust and silence.", food: 0, medicine: 0, morale: 0 }
       ],
-      'Bridge Site': [
+      'bridge': [
         { text: "They repaired some equipment at the bridge site.", food: 0, medicine: 0, morale: 5 },
         { text: "The bridge was in ruins but still standing.", food: 0, medicine: 0, morale: 0 }
       ],
-      'Riverside': [
+      'riverside': [
         { text: "They found tracks in the mud by the river.", food: 0, medicine: 0, morale: 0 },
         { text: "The water was clear and peaceful.", food: 0, medicine: 0, morale: 0 }
       ],
-      'Camp': [
+      'camp': [
         { text: "They explored around the camp.", food: 0, medicine: 0, morale: 0 },
         { text: "They found some old supplies.", food: 5, medicine: 0, morale: 0 }
       ]
@@ -201,7 +206,7 @@ export default function Home() {
     }
     
     // Check if destination is connected to current location
-    const currentNode = mapNodes.find(n => n.name === currentLocation);
+    const currentNode = getNodeById(currentLocation);
     const isAdjacent = currentNode?.connectedNodes.includes(selectedDestination);
     
     if (!isAdjacent) {
@@ -229,13 +234,14 @@ export default function Home() {
     );
     
     // Add story event
-    setCurrentStoryEvents(prev => [...prev, `The group traveled to ${selectedDestination} in ${travelTime} hours.`].slice(-10));
+    const destinationName = getNodeById(selectedDestination)?.name || selectedDestination;
+    setCurrentStoryEvents(prev => [...prev, `The group traveled to ${destinationName} in ${travelTime} hours.`].slice(-10));
     
     // Reveal one connected undiscovered node
-    const currentMapNode = mapNodes.find(n => n.name === selectedDestination);
+    const currentMapNode = getNodeById(selectedDestination);
     if (currentMapNode) {
-      const undiscoveredNodes = currentMapNode.connectedNodes.filter(nodeName => {
-        const node = mapNodes.find(n => n.name === nodeName);
+      const undiscoveredNodes = currentMapNode.connectedNodes.filter(nodeId => {
+        const node = getNodeById(nodeId);
         return node && !node.discovered;
       });
       
@@ -243,14 +249,14 @@ export default function Home() {
         const randomUndiscovered = undiscoveredNodes[Math.floor(Math.random() * undiscoveredNodes.length)];
         setMapNodes(prev => 
           prev.map(node => 
-            node.name === randomUndiscovered ? { ...node, discovered: true } : node
+            node.id === randomUndiscovered ? { ...node, discovered: true } : node
           )
         );
       }
     }
     
     // Check if any survivor reached their destination
-    const reachedSurvivors = survivors.filter(s => !s.dead && s.destination === selectedDestination && !s.fulfilled);
+    const reachedSurvivors = survivors.filter(s => !s.dead && s.destination === getNodeById(selectedDestination)?.name && !s.fulfilled);
     if (reachedSurvivors.length > 0) {
       setSurvivors(prev => 
         prev.map(s => {
@@ -375,31 +381,31 @@ export default function Home() {
   };
 
   // New function to select a destination
-  const handleSelectDestination = (destination: string) => {
-    setSelectedDestination(destination);
+  const handleSelectDestination = (destinationId: string) => {
+    setSelectedDestination(destinationId);
     
     // Update location panel with destination info
-    const node = mapNodes.find(n => n.name === destination);
+    const node = getNodeById(destinationId);
     if (node) {
       // Highlight the selected node
       setMapNodes(prev => 
         prev.map(n => 
-          n.name === destination ? { ...n, highlighted: true } : { ...n, highlighted: false }
+          n.id === destinationId ? { ...n, highlighted: true } : { ...n, highlighted: false }
         )
       );
     }
   };
 
   // Function to handle map node click
-  const handleNodeClick = (nodeName: string) => {
-    if (nodeName === currentLocation) return;
+  const handleNodeClick = (nodeId: string) => {
+    if (nodeId === currentLocation) return;
     
     // Check if node is connected to current location
-    const currentNode = mapNodes.find(n => n.name === currentLocation);
-    const isAdjacent = currentNode?.connectedNodes.includes(nodeName);
+    const currentNode = getNodeById(currentLocation);
+    const isAdjacent = currentNode?.connectedNodes.includes(nodeId);
     
     if (isAdjacent) {
-      handleSelectDestination(nodeName);
+      handleSelectDestination(nodeId);
     } else {
       setCurrentStoryEvents(prev => [...prev, "You cannot travel there directly."].slice(-10));
     }
@@ -528,160 +534,160 @@ export default function Home() {
                 {/* Old School */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Old School' 
+                    currentLocation === 'school' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Old School'
+                      : selectedDestination === 'school'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Old School')?.discovered
+                        : getNodeById('school')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Old School')}
+                  style={{ left: `${(getNodeById('school')?.x ?? 0)}%`, top: `${(getNodeById('school')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('school')}
                 >
                   🏫
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('school')?.x ?? 0)}%`, top: `${(getNodeById('school')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Old School
                 </div>
                 
                 {/* Forest */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Forest' 
+                    currentLocation === 'forest' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Forest'
+                      : selectedDestination === 'forest'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Forest')?.discovered
+                        : getNodeById('forest')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Forest')}
+                  style={{ left: `${(getNodeById('forest')?.x ?? 0)}%`, top: `${(getNodeById('forest')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('forest')}
                 >
                   🌲
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('forest')?.x ?? 0)}%`, top: `${(getNodeById('forest')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Forest
                 </div>
                 
                 {/* Camp */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Camp' 
+                    currentLocation === 'camp' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Camp'
+                      : selectedDestination === 'camp'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Camp')?.discovered
+                        : getNodeById('camp')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Camp')}
+                  style={{ left: `${(getNodeById('camp')?.x ?? 0)}%`, top: `${(getNodeById('camp')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('camp')}
                 >
                   🏕️
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('camp')?.x ?? 0)}%`, top: `${(getNodeById('camp')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Camp
                 </div>
                 
                 {/* Hospital */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Hospital' 
+                    currentLocation === 'hospital' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Hospital'
+                      : selectedDestination === 'hospital'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Hospital')?.discovered
+                        : getNodeById('hospital')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Hospital')}
+                  style={{ left: `${(getNodeById('hospital')?.x ?? 0)}%`, top: `${(getNodeById('hospital')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('hospital')}
                 >
                   ✚
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('hospital')?.x ?? 0)}%`, top: `${(getNodeById('hospital')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Hospital
                 </div>
                 
                 {/* Farm */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Farm' 
+                    currentLocation === 'farm' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Farm'
+                      : selectedDestination === 'farm'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Farm')?.discovered
+                        : getNodeById('farm')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Farm')}
+                  style={{ left: `${(getNodeById('farm')?.x ?? 0)}%`, top: `${(getNodeById('farm')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('farm')}
                 >
                   🌾
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('farm')?.x ?? 0)}%`, top: `${(getNodeById('farm')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Farm
                 </div>
                 
                 {/* Bridge Site */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Bridge Site' 
+                    currentLocation === 'bridge' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Bridge Site'
+                      : selectedDestination === 'bridge'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Bridge Site')?.discovered
+                        : getNodeById('bridge')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Bridge Site')}
+                  style={{ left: `${(getNodeById('bridge')?.x ?? 0)}%`, top: `${(getNodeById('bridge')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('bridge')}
                 >
                   🌉
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('bridge')?.x ?? 0)}%`, top: `${(getNodeById('bridge')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Bridge Site
                 </div>
                 
                 {/* Riverside */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Riverside' 
+                    currentLocation === 'riverside' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Riverside'
+                      : selectedDestination === 'riverside'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Riverside')?.discovered
+                        : getNodeById('riverside')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Riverside')}
+                  style={{ left: `${(getNodeById('riverside')?.x ?? 0)}%`, top: `${(getNodeById('riverside')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('riverside')}
                 >
                   🌊
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('riverside')?.x ?? 0)}%`, top: `${(getNodeById('riverside')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Riverside
                 </div>
                 
                 {/* Harbor */}
                 <button
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Harbor' 
+                    currentLocation === 'harbor' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : selectedDestination === 'Harbor'
+                      : selectedDestination === 'harbor'
                         ? 'bg-yellow-600 border-yellow-400'
-                        : mapNodes.find(n => n.name === 'Harbor')?.discovered
+                        : getNodeById('harbor')?.discovered
                           ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                           : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
-                  style={{ left: `${(mapNodes.find(n => n.id === 'harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => handleNodeClick('Harbor')}
+                  style={{ left: `${(getNodeById('harbor')?.x ?? 0)}%`, top: `${(getNodeById('harbor')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('harbor')}
                 >
                   ⚓
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(getNodeById('harbor')?.x ?? 0)}%`, top: `${(getNodeById('harbor')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Harbor
                 </div>
               </div>
@@ -690,7 +696,7 @@ export default function Home() {
             {/* Current location indicator */}
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
-                <p className="text-sm font-bold">{currentLocation}</p>
+                <p className="text-sm font-bold">{getNodeById(currentLocation)?.name || currentLocation}</p>
               </div>
             </div>
           </div>
@@ -698,11 +704,11 @@ export default function Home() {
           {/* Selected destination indicator */}
           {selectedDestination && (
             <div className="mt-4 bg-gray-700 rounded-lg p-3 border border-gray-600">
-              <p className="text-sm">Selected: {selectedDestination}</p>
+              <p className="text-sm">Selected: {getNodeById(selectedDestination)?.name || selectedDestination}</p>
               {selectedDestination !== currentLocation && (
                 <>
                   <p className="text-xs text-gray-300 mt-1">
-                    {mapNodes.find(n => n.name === selectedDestination)?.connectedNodes.includes(currentLocation) 
+                    {getNodeById(selectedDestination)?.connectedNodes.includes(currentLocation) 
                       ? `Travel time: ${travelTimes[currentLocation]?.[selectedDestination] || 0} hours` 
                       : "Not directly connected"}
                   </p>
@@ -717,23 +723,23 @@ export default function Home() {
           <h2 className="text-xl font-semibold mb-4">Location</h2>
           
           <div>
-            <h3 className="text-lg font-bold mb-2">{currentLocation}</h3>
+            <h3 className="text-lg font-bold mb-2">{getNodeById(currentLocation)?.name || currentLocation}</h3>
             
-            {currentLocation === 'Camp' ? (
+            {currentLocation === 'camp' ? (
               <p className="text-gray-300 mb-4">Your base of operations. A small shelter built from scavenged materials.</p>
-            ) : currentLocation === 'Forest' ? (
+            ) : currentLocation === 'forest' ? (
               <p className="text-gray-300 mb-4">A dense forest with tall trees and thick undergrowth. The air is thick with mystery.</p>
-            ) : currentLocation === 'Hospital' ? (
+            ) : currentLocation === 'hospital' ? (
               <p className="text-gray-300 mb-4">A crumbling hospital building with broken windows and a faded sign.</p>
-            ) : currentLocation === 'Old School' ? (
+            ) : currentLocation === 'school' ? (
               <p className="text-gray-300 mb-4">An old school building with broken windows and a faded sign.</p>
-            ) : currentLocation === 'Farm' ? (
+            ) : currentLocation === 'farm' ? (
               <p className="text-gray-300 mb-4">An abandoned farm with overgrown fields and broken fences.</p>
-            ) : currentLocation === 'Riverside' ? (
+            ) : currentLocation === 'riverside' ? (
               <p className="text-gray-300 mb-4">A quiet riverside with a small bridge and clear water.</p>
-            ) : currentLocation === 'Bridge Site' ? (
+            ) : currentLocation === 'bridge' ? (
               <p className="text-gray-300 mb-4">A site where a bridge was built, now overgrown with vegetation.</p>
-            ) : currentLocation === 'Harbor' ? (
+            ) : currentLocation === 'harbor' ? (
               <p className="text-gray-300 mb-4">A quiet harbor with boats and a lighthouse.</p>
             ) : (
               <p className="text-gray-300 mb-4">Unknown location.</p>
@@ -754,7 +760,7 @@ export default function Home() {
             
             <div className="mb-4">
               <h4 className="font-semibold mb-2">Destination</h4>
-              <p className="text-gray-300">{survivors.find(s => s.name === currentLocation)?.destination || 'No destination'}</p>
+              <p className="text-gray-300">{survivors.find(s => s.name === getNodeById(currentLocation)?.name || currentLocation)?.destination || 'No destination'}</p>
             </div>
           </div>
         </aside>
