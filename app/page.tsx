@@ -183,10 +183,6 @@ export default function Home() {
 
   return (
     <div className="h-screen overflow-hidden bg-slate-950 text-white flex flex-col p-4 gap-3">
-      <div className="fixed top-0 left-0 z-[9999] bg-red-600 text-white text-4xl p-4">
-        TEST NEW FILE
-      </div>
-      
       {/* Top Bar */}
       <header className="h-20 bg-gray-800 rounded-lg flex items-center justify-between px-6">
         <div>
@@ -203,13 +199,12 @@ export default function Home() {
       </header>
 
       {/* Survivors Row */}
-      <section className="h-44 bg-gray-800 rounded-lg p-4 overflow-x-auto">
-        <div className="flex space-x-4 min-w-max">
+      <section className="h-32 bg-gray-800 rounded-lg p-2 overflow-x-auto">
+        <div className="flex space-x-3 min-w-max">
           {survivors.map(survivor => (
             <div 
               key={survivor.id} 
-              className="w-56 bg-gray-700 rounded-lg p-3 border border-gray-600 flex flex-col"
-              style={{ height: '100px' }}
+              className="w-44 bg-gray-700 rounded-lg p-3 border border-gray-600 flex flex-col"
             >
               <div className="flex items-center mb-2">
                 <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center mr-3 font-bold">
@@ -226,20 +221,6 @@ export default function Home() {
                 <span>H: {survivor.hope}%</span>
                 <span>T: {survivor.trust}%</span>
               </div>
-              
-              <button 
-                className="text-xs text-blue-400 mt-1"
-                onClick={() => setExpandedSurvivor(expandedSurvivor === survivor.id ? null : survivor.id)}
-              >
-                {expandedSurvivor === survivor.id ? 'Show less' : 'Show more'}
-              </button>
-              
-              {expandedSurvivor === survivor.id && (
-                <div className="mt-2 text-xs">
-                  <p className="italic text-gray-300">"{survivor.dream}"</p>
-                  <p className="text-gray-400">Destination: {survivor.destination}</p>
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -258,7 +239,7 @@ export default function Home() {
               <div></div>
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Old School' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -266,7 +247,7 @@ export default function Home() {
                 >
                   🏫
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Old School
                 </div>
               </div>
@@ -275,7 +256,7 @@ export default function Home() {
               {/* Row 2 - Forest, Camp, Hospital */}
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Forest' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -283,13 +264,13 @@ export default function Home() {
                 >
                   🌲
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Forest
                 </div>
               </div>
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Camp' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -297,13 +278,13 @@ export default function Home() {
                 >
                   🏕️
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Camp
                 </div>
               </div>
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Hospital' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -311,7 +292,7 @@ export default function Home() {
                 >
                   ✚
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Hospital
                 </div>
               </div>
@@ -320,7 +301,7 @@ export default function Home() {
               <div></div>
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Farm' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -328,7 +309,7 @@ export default function Home() {
                 >
                   🌾
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Farm
                 </div>
               </div>
@@ -337,7 +318,7 @@ export default function Home() {
               {/* Row 4 - Riverside, Bridge Site */}
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Riverside' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -345,13 +326,13 @@ export default function Home() {
                 >
                   🌊
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Riverside
                 </div>
               </div>
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Bridge Site' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -359,7 +340,7 @@ export default function Home() {
                 >
                   🌉
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Bridge Site
                 </div>
               </div>
@@ -369,7 +350,7 @@ export default function Home() {
               <div></div>
               <div className="flex justify-center items-center relative">
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Harbor' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
@@ -377,7 +358,7 @@ export default function Home() {
                 >
                   ⚓
                 </button>
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
                   Harbor
                 </div>
               </div>
@@ -385,7 +366,7 @@ export default function Home() {
             </div>
             
             {/* Connection lines */}
-            <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 pointer-events-none z-0">
               {/* Horizontal connections */}
               <div className="absolute top-1/4 left-1/4 w-1/2 h-1 bg-gray-500"></div>
               <div className="absolute top-1/2 left-1/4 w-1/2 h-1 bg-gray-500"></div>
@@ -496,4 +477,3 @@ export default function Home() {
     </div>
   );
 }
-// TEST Mon Jun 15 20:07:41 CDT 2026
