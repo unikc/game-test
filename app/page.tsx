@@ -199,12 +199,13 @@ export default function Home() {
       </header>
 
       {/* Survivors Row */}
-      <section className="h-32 bg-gray-800 rounded-lg p-2 overflow-x-auto">
+      <section className="shrink-0 min-h-[120px] max-h-[140px] bg-gray-800 rounded-lg p-2 overflow-x-auto overflow-y-hidden">
         <div className="flex space-x-3 min-w-max">
           {survivors.map(survivor => (
             <div 
               key={survivor.id} 
               className="w-44 bg-gray-700 rounded-lg p-3 border border-gray-600 flex flex-col"
+              style={{ height: '112px' }}
             >
               <div className="flex items-center mb-2">
                 <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center mr-3 font-bold">
@@ -363,19 +364,6 @@ export default function Home() {
                 </div>
               </div>
               <div></div>
-            </div>
-            
-            {/* Connection lines */}
-            <div className="absolute inset-0 pointer-events-none z-0">
-              {/* Horizontal connections */}
-              <div className="absolute top-1/4 left-1/4 w-1/2 h-1 bg-gray-500"></div>
-              <div className="absolute top-1/2 left-1/4 w-1/2 h-1 bg-gray-500"></div>
-              <div className="absolute top-3/4 left-1/4 w-1/2 h-1 bg-gray-500"></div>
-              
-              {/* Vertical connections */}
-              <div className="absolute top-1/4 left-1/2 w-1 h-1/2 bg-gray-500"></div>
-              <div className="absolute top-1/4 left-1/3 w-1 h-1/2 bg-gray-500"></div>
-              <div className="absolute top-1/4 left-2/3 w-1 h-1/2 bg-gray-500"></div>
             </div>
             
             {/* Current location indicator */}
