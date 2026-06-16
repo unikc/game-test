@@ -87,6 +87,7 @@ export default function Home() {
   const [currentLocation, setCurrentLocation] = useState('Camp');
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
   const [currentStoryEvent, setCurrentStoryEvent] = useState<string | null>(null);
+  const [expandedSurvivor, setExpandedSurvivor] = useState<string | null>(null);
 
   // Action functions
   const handleExplore = () => {
@@ -203,58 +204,38 @@ export default function Home() {
           {survivors.map(survivor => (
             <div 
               key={survivor.id} 
-              className="w-56 bg-gray-700 rounded-lg p-3 border border-gray-600"
+              className="w-56 bg-gray-700 rounded-lg p-3 border border-gray-600 flex flex-col"
+              style={{ height: '100px' }}
             >
               <div className="flex items-center mb-2">
                 <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center mr-3 font-bold">
                   {survivor.name.charAt(0)}
                 </div>
-                <div>
-                  <h3 className="font-bold">{survivor.name}</h3>
-                  <p className="text-sm text-gray-300">{survivor.profession} • {survivor.personality}</p>
+                <div className="flex-1">
+                  <h3 className="font-bold text-sm">{survivor.name}</h3>
+                  <p className="text-xs text-gray-300">{survivor.profession}</p>
                 </div>
               </div>
               
-              <div className="mb-1">
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Life:</span>
-                  <span>{survivor.life} days</span>
-                </div>
-                <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-red-500 rounded-full" 
-                    style={{ width: `${(survivor.life / 100) * 100}%` }}
-                  ></div>
-                </div>
+              <div className="flex justify-between text-xs mb-1">
+                <span>Life: {survivor.life}d</span>
+                <span>H: {survivor.hope}%</span>
+                <span>T: {survivor.trust}%</span>
               </div>
               
-              <div className="mb-1">
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Hope:</span>
-                  <span>{survivor.hope}%</span>
-                </div>
-                <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-green-500 rounded-full" 
-                    style={{ width: `${survivor.hope}%` }}
-                  ></div>
-                </div>
-              </div>
+              <button 
+                className="text-xs text-blue-400 mt-1"
+                onClick={() => setExpandedSurvivor(expandedSurvivor === survivor.id ? null : survivor.id)}
+              >
+                {expandedSurvivor === survivor.id ? 'Show less' : 'Show more'}
+              </button>
               
-              <div className="mb-2">
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Trust:</span>
-                  <span>{survivor.trust}%</span>
+              {expandedSurvivor === survivor.id && (
+                <div className="mt-2 text-xs">
+                  <p className="italic text-gray-300">"{survivor.dream}"</p>
+                  <p className="text-gray-400">Destination: {survivor.destination}</p>
                 </div>
-                <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 rounded-full" 
-                    style={{ width: `${survivor.trust}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              <p className="text-xs italic text-gray-300">"{survivor.dream}"</p>
+              )}
             </div>
           ))}
         </div>
