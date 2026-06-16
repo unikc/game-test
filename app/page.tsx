@@ -190,7 +190,15 @@ export default function Home() {
   };
 
   const handleTravel = () => {
-    if (!selectedDestination) return;
+    if (!selectedDestination) {
+      setCurrentStoryEvents(prev => [...prev, "Select a destination on the map first."].slice(-10));
+      return;
+    }
+    
+    if (selectedDestination === currentLocation) {
+      setCurrentStoryEvents(prev => [...prev, "You are already here."].slice(-10));
+      return;
+    }
     
     // Check if destination is connected to current location
     const currentNode = mapNodes.find(n => n.name === currentLocation);
@@ -221,7 +229,7 @@ export default function Home() {
     );
     
     // Add story event
-    setCurrentStoryEvents(prev => [...prev, `The group traveled to ${selectedDestination}.`].slice(-10));
+    setCurrentStoryEvents(prev => [...prev, `The group traveled to ${selectedDestination} in ${travelTime} hours.`].slice(-10));
     
     // Reveal one connected undiscovered node
     const currentMapNode = mapNodes.find(n => n.name === selectedDestination);
@@ -691,7 +699,15 @@ export default function Home() {
           {selectedDestination && (
             <div className="mt-4 bg-gray-700 rounded-lg p-3 border border-gray-600">
               <p className="text-sm">Selected: {selectedDestination}</p>
-              <p className="text-xs text-gray-300 mt-1">Click Travel to move here</p>
+              {selectedDestination !== currentLocation && (
+                <>
+                  <p className="text-xs text-gray-300 mt-1">
+                    {mapNodes.find(n => n.name === selectedDestination)?.connectedNodes.includes(currentLocation) 
+                      ? `Travel time: ${travelTimes[currentLocation]?.[selectedDestination] || 0} hours` 
+                      : "Not directly connected"}
+                  </p>
+                </>
+              )}
             </div>
           )}
         </section>
