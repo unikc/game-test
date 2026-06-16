@@ -24,7 +24,8 @@ export default function Home() {
       destination: 'Old School',
       distanceToDestination: 12,
       dead: false,
-      fulfilled: false
+      fulfilled: false,
+      dreamFulfilled: false
     },
     {
       id: '2',
@@ -38,7 +39,8 @@ export default function Home() {
       destination: 'Harbor',
       distanceToDestination: 15,
       dead: false,
-      fulfilled: false
+      fulfilled: false,
+      dreamFulfilled: false
     },
     {
       id: '3',
@@ -52,7 +54,8 @@ export default function Home() {
       destination: 'Bridge Site',
       distanceToDestination: 10,
       dead: false,
-      fulfilled: false
+      fulfilled: false,
+      dreamFulfilled: false
     },
     {
       id: '4',
@@ -66,7 +69,8 @@ export default function Home() {
       destination: 'Riverside',
       distanceToDestination: 20,
       dead: false,
-      fulfilled: false
+      fulfilled: false,
+      dreamFulfilled: false
     },
     {
       id: '5',
@@ -80,19 +84,20 @@ export default function Home() {
       destination: 'Harbor',
       distanceToDestination: 8,
       dead: false,
-      fulfilled: false
+      fulfilled: false,
+      dreamFulfilled: false
     }
   ]);
   
   const [mapNodes, setMapNodes] = useState([
-    { id: 'camp', name: 'Camp', discovered: true, visited: true, emoji: '🏕️', connectedNodes: ['forest', 'hospital', 'farm'], x: 50, y: 30 },
-    { id: 'forest', name: 'Forest', discovered: false, visited: false, emoji: '🌲', connectedNodes: ['camp'], x: 20, y: 30 },
-    { id: 'hospital', name: 'Hospital', discovered: false, visited: false, emoji: '✚', connectedNodes: ['camp'], x: 80, y: 30 },
-    { id: 'school', name: 'Old School', discovered: false, visited: false, emoji: '🏫', connectedNodes: ['camp'], x: 50, y: 10 },
-    { id: 'farm', name: 'Farm', discovered: false, visited: false, emoji: '🌾', connectedNodes: ['camp', 'riverside'], x: 40, y: 55 },
-    { id: 'riverside', name: 'Riverside', discovered: false, visited: false, emoji: '🌊', connectedNodes: ['farm', 'bridge'], x: 25, y: 80 },
-    { id: 'bridge', name: 'Bridge Site', discovered: false, visited: false, emoji: '🌉', connectedNodes: ['riverside', 'harbor'], x: 60, y: 55 },
-    { id: 'harbor', name: 'Harbor', discovered: false, visited: false, emoji: '⚓', connectedNodes: ['bridge'], x: 75, y: 80 }
+    { id: 'camp', name: 'Camp', discovered: true, visited: true, emoji: '🏕️', connectedNodes: ['forest', 'hospital', 'farm'], x: 50, y: 30, remainingSupplies: null },
+    { id: 'forest', name: 'Forest', discovered: false, visited: false, emoji: '🌲', connectedNodes: ['camp', 'riverside'], x: 20, y: 30, remainingSupplies: 50 },
+    { id: 'hospital', name: 'Hospital', discovered: false, visited: false, emoji: '✚', connectedNodes: ['camp'], x: 80, y: 30, remainingSupplies: 40 },
+    { id: 'school', name: 'Old School', discovered: false, visited: false, emoji: '🏫', connectedNodes: ['camp'], x: 50, y: 10, remainingSupplies: 30 },
+    { id: 'farm', name: 'Farm', discovered: false, visited: false, emoji: '🌾', connectedNodes: ['camp', 'riverside'], x: 40, y: 55, remainingSupplies: 60 },
+    { id: 'riverside', name: 'Riverside', discovered: false, visited: false, emoji: '🌊', connectedNodes: ['farm', 'bridge'], x: 25, y: 80, remainingSupplies: 45 },
+    { id: 'bridge', name: 'Bridge Site', discovered: false, visited: false, emoji: '🌉', connectedNodes: ['riverside', 'harbor'], x: 60, y: 55, remainingSupplies: 35 },
+    { id: 'harbor', name: 'Harbor', discovered: false, visited: false, emoji: '⚓', connectedNodes: ['bridge'], x: 75, y: 80, remainingSupplies: 55 }
   ]);
   
   const [currentLocation, setCurrentLocation] = useState('camp');
@@ -110,13 +115,13 @@ export default function Home() {
       'farm': 1,
       'school': 5
     },
-    'forest': { 'camp': 2 },
+    'forest': { 'camp': 2, 'riverside': 3 },
     'hospital': { 'camp': 2 },
     'school': { 'camp': 5 },
     'farm': { 'camp': 1, 'riverside': 3 },
     'riverside': { 'farm': 3, 'bridge': 2 },
-    'bridge': { 'riverside': 2, 'harbor': 4 },
-    'harbor': { 'bridge': 4 }
+    'bridge': { 'riverside': 2, 'harbor': 2 },
+    'harbor': { 'bridge': 2 }
   };
 
   // Helper function to get node by ID
@@ -129,63 +134,119 @@ export default function Home() {
     // Advance time
     setGameTime(prev => prev + 3);
     
+    // Get current node supplies
+    const currentNode = getNodeById(currentLocation);
+    if (!currentNode) return;
+    
+    // Check if supplies are depleted
+    if (currentNode.remainingSupplies === 0) {
+      setCurrentStoryEvents(prev => [...prev, "This area has been scavenged already."].slice(-10));
+      return;
+    }
+    
     // Random event based on current location
     let eventText = '';
     let foodChange = 0;
     let medicineChange = 0;
     let moraleChange = 0;
     let hopeChange = 0;
+    let injury = false;
+    let infection = false;
     
     const events = {
       'forest': [
-        { text: "The group found edible berries in the forest.", food: 10, medicine: 0, morale: 0 },
-        { text: "They discovered a hidden cache of food.", food: 5, medicine: 0, morale: 0 }
+        { text: "The group found edible berries in the forest.", food: 10, medicine: 0, morale: 0, chance: 0.6 },
+        { text: "They discovered a hidden cache of food.", food: 5, medicine: 0, morale: 0, chance: 0.2 },
+        { text: "They got injured while exploring.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.2 }
       ],
       'hospital': [
-        { text: "They found medicine in an old pharmacy.", food: 0, medicine: 3, morale: 0 },
-        { text: "The hospital was full of strange sounds.", food: 0, medicine: 0, morale: 0 }
+        { text: "They found medicine in an old pharmacy.", food: 0, medicine: 10, morale: 0, chance: 0.5 },
+        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.3 },
+        { text: "They caught an infection from a broken syringe.", food: 0, medicine: 0, morale: -5, infection: true, chance: 0.2 }
       ],
       'farm': [
-        { text: "They found supplies in the abandoned farm.", food: 15, medicine: 0, morale: 0 },
-        { text: "The fields were overgrown with wild plants.", food: 0, medicine: 0, morale: 0 }
+        { text: "They found supplies in the abandoned farm.", food: 15, medicine: 0, morale: 0, chance: 0.7 },
+        { text: "They found some old food.", food: 5, medicine: 0, morale: 0, chance: 0.2 },
+        { text: "They got injured while working.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.1 }
       ],
       'harbor': [
-        { text: "They watched a beautiful sunset at the harbor.", food: 0, medicine: 0, morale: 10 },
-        { text: "The ocean was calm and peaceful.", food: 0, medicine: 0, morale: 0 }
+        { text: "They found some useful items at the harbor.", food: 0, medicine: 0, morale: 5, chance: 0.5 },
+        { text: "They found fuel for their supplies.", food: 0, medicine: 0, morale: 0, chance: 0.3 },
+        { text: "They encountered a dangerous situation.", food: 0, medicine: 0, morale: -10, chance: 0.2 }
       ],
       'school': [
-        { text: "They found old memories in the school building.", food: 0, medicine: 0, morale: 10 },
-        { text: "The classrooms were filled with dust and silence.", food: 0, medicine: 0, morale: 0 }
+        { text: "They found old memories in the school building.", food: 0, medicine: 0, morale: 10, chance: 0.6 },
+        { text: "The classrooms were filled with dust and silence.", food: 0, medicine: 0, morale: 0, chance: 0.3 },
+        { text: "They found a hidden message in the school.", food: 0, medicine: 0, morale: 5, chance: 0.1 }
       ],
       'bridge': [
-        { text: "They repaired some equipment at the bridge site.", food: 0, medicine: 0, morale: 5 },
-        { text: "The bridge was in ruins but still standing.", food: 0, medicine: 0, morale: 0 }
+        { text: "They found scrap materials at the bridge site.", food: 0, medicine: 0, morale: 0, chance: 0.4 },
+        { text: "They found nothing useful.", food: 0, medicine: 0, morale: 0, chance: 0.4 },
+        { text: "They got injured while working on the bridge.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.2 }
       ],
       'riverside': [
-        { text: "They found tracks in the mud by the river.", food: 0, medicine: 0, morale: 0 },
-        { text: "The water was clear and peaceful.", food: 0, medicine: 0, morale: 0 }
+        { text: "They found tracks in the mud by the river.", food: 0, medicine: 0, morale: 0, chance: 0.5 },
+        { text: "The water was clear and peaceful.", food: 0, medicine: 0, morale: 5, chance: 0.3 },
+        { text: "They found a small treasure by the river.", food: 0, medicine: 0, morale: 10, chance: 0.2 }
       ],
       'camp': [
-        { text: "They explored around the camp.", food: 0, medicine: 0, morale: 0 },
-        { text: "They found some old supplies.", food: 5, medicine: 0, morale: 0 }
+        { text: "They explored around the camp.", food: 0, medicine: 0, morale: 0, chance: 0.6 },
+        { text: "They found some old supplies.", food: 5, medicine: 0, morale: 0, chance: 0.3 },
+        { text: "They got injured while exploring.", food: 0, medicine: -2, morale: 0, injury: true, chance: 0.1 }
       ]
     };
     
     const locationEvents = events[currentLocation] || [];
     if (locationEvents.length > 0) {
-      const randomEvent = locationEvents[Math.floor(Math.random() * locationEvents.length)];
-      eventText = randomEvent.text;
+      // Weighted random selection
+      let cumulativeChance = 0;
+      const rand = Math.random();
       
-      // Apply changes
-      setResources(prev => 
-        prev.map(res => {
-          if (res.name === 'Food') return { ...res, amount: Math.min(res.amount + randomEvent.food, res.max) };
-          if (res.name === 'Medicine') return { ...res, amount: Math.min(res.amount + randomEvent.medicine, res.max) };
-          if (res.name === 'Morale') return { ...res, amount: Math.min(res.amount + randomEvent.morale, res.max) };
-          return res;
-        })
-      );
+      let selectedEvent = null;
+      for (const event of locationEvents) {
+        cumulativeChance += event.chance;
+        if (rand <= cumulativeChance) {
+          selectedEvent = event;
+          break;
+        }
+      }
+      
+      if (selectedEvent) {
+        eventText = selectedEvent.text;
+        foodChange = selectedEvent.food || 0;
+        medicineChange = selectedEvent.medicine || 0;
+        moraleChange = selectedEvent.morale || 0;
+        injury = selectedEvent.injury || false;
+        infection = selectedEvent.infection || false;
+        
+        // Apply changes
+        setResources(prev => 
+          prev.map(res => {
+            if (res.name === 'Food') return { ...res, amount: Math.min(res.amount + foodChange, res.max) };
+            if (res.name === 'Medicine') return { ...res, amount: Math.min(res.amount + medicineChange, res.max) };
+            if (res.name === 'Morale') return { ...res, amount: Math.min(res.amount + moraleChange, res.max) };
+            return res;
+          })
+        );
+        
+        // Handle injury or infection
+        if (injury || infection) {
+          const injuryText = injury ? "They got injured while exploring." : "They caught an infection from a broken syringe.";
+          setCurrentStoryEvents(prev => [...prev, injuryText].slice(-10));
+        }
+      }
     }
+    
+    // Reduce supplies
+    setMapNodes(prev => 
+      prev.map(node => {
+        if (node.id === currentLocation) {
+          const newSupplies = Math.max(0, node.remainingSupplies! - 1);
+          return { ...node, remainingSupplies: newSupplies };
+        }
+        return node;
+      })
+    );
     
     // Add story event
     setCurrentStoryEvents(prev => {
@@ -285,6 +346,26 @@ export default function Home() {
       setCurrentStoryEvents(prev => [...prev, `${survivorNames} reached their destination. ${memoryEvent}`].slice(-10));
     }
     
+    // Check if survivor's dream is fulfilled
+    const currentSurvivor = survivors.find(s => s.name === getNodeById(selectedDestination)?.name);
+    if (currentSurvivor && !currentSurvivor.dreamFulfilled) {
+      setSurvivors(prev => 
+        prev.map(s => {
+          if (s.name === currentSurvivor.name) {
+            return { 
+              ...s, 
+              hope: Math.min(100, s.hope + 20),
+              trust: Math.min(100, s.trust + 10),
+              dreamFulfilled: true
+            };
+          }
+          return s;
+        })
+      );
+      
+      setCurrentStoryEvents(prev => [...prev, `${currentSurvivor.name} fulfilled their dream! Hope +20, Trust +10.`].slice(-10));
+    }
+    
     setSelectedDestination(null);
   };
 
@@ -298,16 +379,47 @@ export default function Home() {
     
     const randomSurvivor = aliveSurvivors[Math.floor(Math.random() * aliveSurvivors.length)];
     
-    // Increase hope or trust
-    const increaseType = Math.random() > 0.5 ? 'hope' : 'trust';
-    const increaseValue = 5;
+    // Unique dialogue lines for each survivor
+    const dialogues = {
+      'Elena': [
+        "I wonder if my classroom is still there.",
+        "The school feels smaller than I remembered.",
+        "I hope someone else found something good in here."
+      ],
+      'Marcus': [
+        "I still want to see the ocean.",
+        "The waves are so peaceful.",
+        "I've always wanted to see the ocean one more time."
+      ],
+      'Sophie': [
+        "I want to finish what I started.",
+        "This bridge was supposed to be completed.",
+        "I hope someone else will finish it for me."
+      ],
+      'David': [
+        "I'm still looking for my daughter.",
+        "I found a clue about her last night.",
+        "She might be here somewhere."
+      ],
+      'James': [
+        "I want to paint one more sunset.",
+        "The colors are so beautiful at this time of day.",
+        "This is the last sunset I'll paint."
+      ]
+    };
+    
+    const survivorDialogues = dialogues[randomSurvivor.name as keyof typeof dialogues] || ["I have something to say."];
+    const randomDialogue = survivorDialogues[Math.floor(Math.random() * survivorDialogues.length)];
+    
+    // Increase hope
+    const hopeIncrease = Math.floor(Math.random() * 3) + 1; // 1-3
     
     setSurvivors(prev => 
       prev.map(s => {
         if (s.name === randomSurvivor.name) {
           return { 
             ...s, 
-            [increaseType]: Math.min(100, s[increaseType] + increaseValue) 
+            hope: Math.min(100, s.hope + hopeIncrease) 
           };
         }
         return s;
@@ -315,7 +427,7 @@ export default function Home() {
     );
     
     // Add story event
-    setCurrentStoryEvents(prev => [...prev, `${randomSurvivor.name} shared why they want to reach ${randomSurvivor.destination}.`].slice(-10));
+    setCurrentStoryEvents(prev => [...prev, `${randomSurvivor.name}: "${randomDialogue}" Hope +${hopeIncrease}.`].slice(-10));
   };
 
   const handleRest = () => {
@@ -375,6 +487,33 @@ export default function Home() {
         res
       )
     );
+    
+    // Check for food depletion
+    if (resources[0].amount <= 0) {
+      setResources(prev => 
+        prev.map(res => 
+          res.name === 'Morale' ? { ...res, amount: Math.max(0, res.amount - 10) } : 
+          res
+        )
+      );
+      
+      // If morale is 0, random survivor loses hope
+      if (resources[1].amount <= 0) {
+        const aliveSurvivors = survivors.filter(s => !s.dead);
+        if (aliveSurvivors.length > 0) {
+          const randomSurvivor = aliveSurvivors[Math.floor(Math.random() * aliveSurvivors.length)];
+          setSurvivors(prev => 
+            prev.map(s => {
+              if (s.name === randomSurvivor.name) {
+                return { ...s, hope: Math.max(0, s.hope - 10) };
+              }
+              return s;
+            })
+          );
+          setCurrentStoryEvents(prev => [...prev, `${randomSurvivor.name} lost hope due to lack of food.`].slice(-10));
+        }
+      }
+    }
     
     // Add overnight event
     setCurrentStoryEvents(prev => [...prev, "The night passed quietly."].slice(-10));
@@ -512,7 +651,7 @@ export default function Home() {
               
               <div className="flex justify-between text-xs mt-1">
                 <span className="text-gray-300">{survivor.destination}</span>
-                {survivor.fulfilled && (
+                {survivor.dreamFulfilled && (
                   <span className="text-yellow-400">✓</span>
                 )}
               </div>
@@ -708,9 +847,7 @@ export default function Home() {
               {selectedDestination !== currentLocation && (
                 <>
                   <p className="text-xs text-gray-300 mt-1">
-                    {getNodeById(selectedDestination)?.connectedNodes.includes(currentLocation) 
-                      ? `Travel time: ${travelTimes[currentLocation]?.[selectedDestination] || 0} hours` 
-                      : "Not directly connected"}
+                    Travel time: {travelTimes[currentLocation]?.[selectedDestination] || 0} hours
                   </p>
                 </>
               )}
@@ -762,6 +899,17 @@ export default function Home() {
               <h4 className="font-semibold mb-2">Destination</h4>
               <p className="text-gray-300">{survivors.find(s => s.name === getNodeById(currentLocation)?.name || currentLocation)?.destination || 'No destination'}</p>
             </div>
+            
+            {getNodeById(currentLocation)?.remainingSupplies !== null && (
+              <div className="mb-4">
+                <h4 className="font-semibold mb-2">Supplies</h4>
+                <p className="text-gray-300">
+                  {getNodeById(currentLocation)?.remainingSupplies === 0 
+                    ? "Depleted" 
+                    : `Remaining: ${getNodeById(currentLocation)?.remainingSupplies}`}
+                </p>
+              </div>
+            )}
           </div>
         </aside>
       </main>
