@@ -57,6 +57,7 @@ type MapNode = {
   visited: boolean;
   connectedNodes: string[];
   storyEvents: string[];
+  emoji: string;
 };
 
 // Initial data
@@ -142,11 +143,12 @@ const initialMapNodes: MapNode[] = [
     storyEvents: [
       "You set up camp in the clearing. The smell of smoke lingers in the air.",
       "The group gathers around the fire, sharing stories of better times."
-    ]
+    ],
+    emoji: '🏕️'
   },
   {
     id: 'forest',
-    name: 'North Forest',
+    name: 'Forest',
     x: 250,
     y: 200,
     description: 'A dense forest with tall trees and thick undergrowth. The air is thick with mystery.',
@@ -156,7 +158,8 @@ const initialMapNodes: MapNode[] = [
     storyEvents: [
       "The forest is eerily quiet. You hear something rustling in the bushes.",
       "You find a small stream running through the trees. It's clear and fresh."
-    ]
+    ],
+    emoji: '🌲'
   },
   {
     id: 'town',
@@ -170,7 +173,8 @@ const initialMapNodes: MapNode[] = [
     storyEvents: [
       "The streets are littered with debris. You find a child's toy in the rubble.",
       "You hear voices from an abandoned building. They fade quickly."
-    ]
+    ],
+    emoji: '🏘️'
   },
   {
     id: 'hospital',
@@ -185,7 +189,8 @@ const initialMapNodes: MapNode[] = [
       "You found a locked medicine cabinet.",
       "Maya recognizes the smell of disinfectant and goes quiet.",
       "The hospital is filled with echoes of past suffering."
-    ]
+    ],
+    emoji: '✚'
   },
   {
     id: 'school',
@@ -200,7 +205,8 @@ const initialMapNodes: MapNode[] = [
       "Michael finds his old classroom. The blackboard still has his handwriting.",
       "You find a collection of student drawings on the wall.",
       "The school bell still rings in your memory."
-    ]
+    ],
+    emoji: '🏫'
   },
   {
     id: 'farm',
@@ -215,7 +221,8 @@ const initialMapNodes: MapNode[] = [
       "The soil is dry, but something still grows here.",
       "You find a small garden that someone tended to before the pandemic.",
       "A barn creaks in the wind. You hear something moving inside."
-    ]
+    ],
+    emoji: '🌾'
   },
   {
     id: 'riverside',
@@ -230,7 +237,8 @@ const initialMapNodes: MapNode[] = [
       "A message is carved into the bridge: THEY WENT EAST.",
       "The river flows calmly. You feel a sense of peace here.",
       "You find an old fishing net tangled in the reeds."
-    ]
+    ],
+    emoji: '🌊'
   },
   {
     id: 'harbor',
@@ -245,7 +253,8 @@ const initialMapNodes: MapNode[] = [
       "Sarah sees the ocean for the first time in years.",
       "The waves crash against the rocks. You feel the vastness of the world.",
       "You find a small boat that might still be seaworthy."
-    ]
+    ],
+    emoji: '⚓'
   }
 ];
 
@@ -736,14 +745,14 @@ export default function Home() {
   const currentNode = mapNodes.find(node => node.name === currentLocation);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      {/* Top Status Bar */}
-      <div className="top-bar">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+      {/* Top Bar */}
+      <div className="h-20 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-6">
         <div>
           <h1 className="text-2xl font-bold">Cozy Apocalypse</h1>
-          <p className="text-gray-300">Day {Math.floor(gameTime / 24)} - Time: {gameTime % 24} hours</p>
+          <p className="text-gray-300 text-sm">Day {Math.floor(gameTime / 24)} - Time: {gameTime % 24} hours</p>
         </div>
-        <div className="flex space-x-4">
+        <div className="flex space-x-6">
           <div className="text-right">
             <p className="text-sm">Food: {resources[0].amount}</p>
             <p className="text-sm">Medicine: {resources[1].amount}</p>
@@ -752,49 +761,46 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="main-content">
-        {/* Left Column - Survivors */}
-        <div className="left-panel">
-          <h2 className="text-xl font-semibold mb-3">Survivors</h2>
-          <div className="space-y-3">
-            {survivors.map(survivor => (
-              <SurvivorCard 
-                key={survivor.id} 
-                survivor={survivor}
-                isSelected={selectedSurvivor === survivor.id}
-                onClick={() => setSelectedSurvivor(selectedSurvivor === survivor.id ? null : survivor.id)}
-              />
-            ))}
-          </div>
-        </div>
+      {/* Survivors Row */}
+      <div className="flex overflow-x-auto py-4 px-6 space-x-4 bg-gray-800 border-b border-gray-700">
+        {survivors.map(survivor => (
+          <SurvivorCard 
+            key={survivor.id} 
+            survivor={survivor}
+            isSelected={selectedSurvivor === survivor.id}
+            onClick={() => setSelectedSurvivor(selectedSurvivor === survivor.id ? null : survivor.id)}
+          />
+        ))}
+      </div>
 
-        {/* Center Column - Map */}
-        <div className="center-panel">
-          <h2 className="text-xl font-semibold mb-3">Map</h2>
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Map Panel */}
+        <div className="flex-1 p-6 bg-gray-800 border-r border-gray-700">
+          <h2 className="text-xl font-semibold mb-4">Map</h2>
           
-          <div className="map-container">
-            {/* Roads - rendered first to be behind nodes */}
+          <div className="relative w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden">
+            {/* Roads */}
             {mapNodes.map(node => (
               node.connectedNodes.map(connectedId => {
                 const connectedNode = mapNodes.find(n => n.id === connectedId);
                 if (!connectedNode) return null;
                 
+                // Determine if the connection is discovered
+                const isDiscovered = node.discovered && connectedNode.discovered;
+                
                 return (
-                  <svg 
+                  <div 
                     key={`${node.id}-${connectedId}`} 
-                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                    style={{ zIndex: 1 }}
-                  >
-                    <line 
-                      x1={node.x} 
-                      y1={node.y} 
-                      x2={connectedNode.x} 
-                      y2={connectedNode.y} 
-                      stroke="#6b7280" 
-                      strokeWidth="2" 
-                      strokeDasharray="5,5"
-                    />
-                  </svg>
+                    className={`absolute w-1 ${isDiscovered ? 'bg-gray-500' : 'bg-gray-600'} opacity-70`}
+                    style={{
+                      left: `${(node.x + connectedNode.x) / 2}px`,
+                      top: `${(node.y + connectedNode.y) / 2}px`,
+                      width: `${Math.sqrt(Math.pow(connectedNode.x - node.x, 2) + Math.pow(connectedNode.y - node.y, 2))}px`,
+                      transform: `rotate(${Math.atan2(connectedNode.y - node.y, connectedNode.x - node.x)}rad)`,
+                      transformOrigin: 'left center'
+                    }}
+                  />
                 );
               })
             ))}
@@ -803,11 +809,14 @@ export default function Home() {
             {mapNodes.map(node => (
               <button
                 key={node.id}
-                className={`node ${
-                  node.name === currentLocation ? 'current' : 
-                  node.discovered ? (node.visited ? 'visited' : 'discovered') : 'undiscovered'
+                className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                  node.name === currentLocation 
+                    ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                    : node.discovered 
+                      ? 'bg-gray-700 border-gray-500 hover:bg-gray-600' 
+                      : 'bg-gray-900 border-gray-600 opacity-50'
                 }`}
-                style={{ left: `${node.x}px`, top: `${node.y}px` }}
+                style={{ left: `${node.x - 32}px`, top: `${node.y - 32}px` }}
                 onClick={() => {
                   if (node.discovered && node.name !== currentLocation) {
                     setSelectedDestination(node.name);
@@ -815,11 +824,7 @@ export default function Home() {
                 }}
                 disabled={!node.discovered}
               >
-                {node.discovered ? (
-                  <span className="text-xs font-bold">{node.name.charAt(0)}</span>
-                ) : (
-                  <span className="text-xs">???</span>
-                )}
+                {node.discovered ? node.emoji : '???'}
               </button>
             ))}
             
@@ -827,7 +832,7 @@ export default function Home() {
             {currentNode && (
               <div 
                 className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center"
-                style={{ left: `${currentNode.x}px`, top: `${currentNode.y - 50}px` }}
+                style={{ left: `${currentNode.x}px`, top: `${currentNode.y - 60}px` }}
               >
                 <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
                   <p className="text-sm font-bold">{currentLocation}</p>
@@ -838,16 +843,16 @@ export default function Home() {
           
           {/* Selected destination indicator */}
           {selectedDestination && (
-            <div className="mt-3 bg-gray-700 rounded-lg p-3 border border-gray-600">
+            <div className="mt-4 bg-gray-700 rounded-lg p-3 border border-gray-600">
               <p className="text-sm">Selected: {selectedDestination}</p>
               <p className="text-xs text-gray-300 mt-1">Click Travel to move here</p>
             </div>
           )}
         </div>
 
-        {/* Right Column - Location Details */}
-        <div className="right-panel">
-          <h2 className="text-xl font-semibold mb-3">Location</h2>
+        {/* Location Panel */}
+        <div className="w-[320px] p-6 bg-gray-800 border-r border-gray-700">
+          <h2 className="text-xl font-semibold mb-4">Location</h2>
           
           {currentNode ? (
             <>
@@ -877,7 +882,7 @@ export default function Home() {
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="action-bar">
+      <div className="h-20 bg-gray-800 border-t border-gray-700 flex items-center justify-center space-x-4 sticky bottom-0">
         <button 
           onClick={handleExplore}
           className="action-button"

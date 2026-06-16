@@ -9,6 +9,7 @@ body {
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   background-color: #111827;
   color: white;
+  overflow: hidden;
 }
 
 * {
@@ -22,58 +23,6 @@ body {
   padding: 16px;
 }
 
-.top-bar {
-  background-color: #1f2937;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid #374151;
-}
-
-.main-content {
-  display: grid;
-  grid-template-columns: 280px 1fr 320px;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.left-panel {
-  background-color: #1f2937;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #374151;
-}
-
-.center-panel {
-  background-color: #1f2937;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #374151;
-  position: relative;
-  height: 600px;
-}
-
-.right-panel {
-  background-color: #1f2937;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #374151;
-}
-
-.action-bar {
-  background-color: #1f2937;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #374151;
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
 .action-button {
   background-color: #3b82f6;
   color: white;
@@ -83,56 +32,11 @@ body {
   cursor: pointer;
   transition: background-color 0.2s;
   font-weight: bold;
+  min-width: 120px;
 }
 
 .action-button:hover {
   background-color: #2563eb;
-}
-
-.map-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background-color: #111827;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.node {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  width: 100px;
-  height: 50px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 10;
-  border: 2px solid #4b5563;
-}
-
-.node.current {
-  background-color: #3b82f6;
-  border: 2px solid #60a5fa;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-}
-
-.node.discovered {
-  background-color: #374151;
-  border: 1px solid #4b5563;
-}
-
-.node.visited {
-  background-color: #4b5563;
-  border: 1px solid #6b7280;
-}
-
-.node.undiscovered {
-  background-color: #111827;
-  border: 1px solid #374151;
-  opacity: 0.5;
 }
 
 .survivor-card {
