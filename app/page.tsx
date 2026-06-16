@@ -233,137 +233,154 @@ export default function Home() {
         <section className="bg-gray-800 rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-4">Map</h2>
           
-          <div className="relative w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden">
-            {/* Grid-based map layout */}
-            <div className="grid grid-cols-3 grid-rows-5 gap-4 w-full h-full p-8">
-              {/* Row 1 - Old School */}
-              <div></div>
-              <div className="flex justify-center items-center relative">
+          <div className="relative w-full h-[600px] bg-gray-900 rounded-lg overflow-hidden">
+            {/* SVG connections */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+              {/* Old School -> Camp */}
+              <line x1="50%" y1="10%" x2="50%" y2="30%" stroke="#6b7280" strokeWidth="2" />
+              
+              {/* Forest -> Camp */}
+              <line x1="20%" y1="30%" x2="50%" y2="30%" stroke="#6b7280" strokeWidth="2" />
+              
+              {/* Camp -> Hospital */}
+              <line x1="50%" y1="30%" x2="80%" y2="30%" stroke="#6b7280" strokeWidth="2" />
+              
+              {/* Camp -> Farm */}
+              <line x1="50%" y1="30%" x2="40%" y2="55%" stroke="#6b7280" strokeWidth="2" />
+              
+              {/* Camp -> Bridge Site */}
+              <line x1="50%" y1="30%" x2="60%" y2="55%" stroke="#6b7280" strokeWidth="2" />
+              
+              {/* Farm -> Riverside */}
+              <line x1="40%" y1="55%" x2="25%" y2="80%" stroke="#6b7280" strokeWidth="2" />
+              
+              {/* Bridge Site -> Harbor */}
+              <line x1="60%" y1="55%" x2="75%" y2="80%" stroke="#6b7280" strokeWidth="2" />
+            </svg>
+            
+            {/* Map nodes */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative w-full h-full">
+                {/* Old School */}
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Old School' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
+                  style={{ left: '50%', top: '10%', transform: 'translate(-50%, -50%)' }}
                 >
                   🏫
                 </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '50%', top: '2%', transform: 'translateX(-50%)', zIndex: 20 }}>
                   Old School
                 </div>
-              </div>
-              <div></div>
-              
-              {/* Row 2 - Forest, Camp, Hospital */}
-              <div className="flex justify-center items-center relative">
+                
+                {/* Forest */}
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Forest' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
+                  style={{ left: '20%', top: '30%', transform: 'translate(-50%, -50%)' }}
                 >
                   🌲
                 </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '20%', top: '22%', transform: 'translateX(-50%)', zIndex: 20 }}>
                   Forest
                 </div>
-              </div>
-              <div className="flex justify-center items-center relative">
+                
+                {/* Camp */}
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Camp' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
+                  style={{ left: '50%', top: '30%', transform: 'translate(-50%, -50%)' }}
                 >
                   🏕️
                 </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '50%', top: '22%', transform: 'translateX(-50%)', zIndex: 20 }}>
                   Camp
                 </div>
-              </div>
-              <div className="flex justify-center items-center relative">
+                
+                {/* Hospital */}
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Hospital' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
+                  style={{ left: '80%', top: '30%', transform: 'translate(-50%, -50%)' }}
                 >
                   ✚
                 </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '80%', top: '22%', transform: 'translateX(-50%)', zIndex: 20 }}>
                   Hospital
                 </div>
-              </div>
-              
-              {/* Row 3 - Farm */}
-              <div></div>
-              <div className="flex justify-center items-center relative">
+                
+                {/* Farm */}
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Farm' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
+                  style={{ left: '40%', top: '55%', transform: 'translate(-50%, -50%)' }}
                 >
                   🌾
                 </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '40%', top: '47%', transform: 'translateX(-50%)', zIndex: 20 }}>
                   Farm
                 </div>
-              </div>
-              <div></div>
-              
-              {/* Row 4 - Riverside, Bridge Site */}
-              <div className="flex justify-center items-center relative">
+                
+                {/* Bridge Site */}
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
-                    currentLocation === 'Riverside' 
-                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
-                  }`}
-                >
-                  🌊
-                </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
-                  Riverside
-                </div>
-              </div>
-              <div className="flex justify-center items-center relative">
-                <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Bridge Site' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
+                  style={{ left: '60%', top: '55%', transform: 'translate(-50%, -50%)' }}
                 >
                   🌉
                 </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '60%', top: '47%', transform: 'translateX(-50%)', zIndex: 20 }}>
                   Bridge Site
                 </div>
-              </div>
-              <div></div>
-              
-              {/* Row 5 - Harbor */}
-              <div></div>
-              <div className="flex justify-center items-center relative">
+                
+                {/* Riverside */}
                 <button
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
+                    currentLocation === 'Riverside' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  style={{ left: '25%', top: '80%', transform: 'translate(-50%, -50%)' }}
+                >
+                  🌊
+                </button>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '25%', top: '72%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                  Riverside
+                </div>
+                
+                {/* Harbor */}
+                <button
+                  className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Harbor' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
+                  style={{ left: '75%', top: '80%', transform: 'translate(-50%, -50%)' }}
                 >
                   ⚓
                 </button>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '75%', top: '72%', transform: 'translateX(-50%)', zIndex: 20 }}>
                   Harbor
                 </div>
               </div>
-              <div></div>
             </div>
             
             {/* Current location indicator */}
