@@ -745,7 +745,7 @@ export default function Home() {
   const currentNode = mapNodes.find(node => node.name === currentLocation);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Top Bar */}
       <div className="h-20 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-6">
         <div>
@@ -775,65 +775,173 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Map Panel */}
-        <div className="flex-1 p-6 bg-gray-800 border-r border-gray-700">
+        {/* Map Panel - 75% width */}
+        <div className="w-[75%] p-6 bg-gray-800 border-r border-gray-700">
           <h2 className="text-xl font-semibold mb-4">Map</h2>
           
           <div className="relative w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden">
-            {/* Roads */}
-            {mapNodes.map(node => (
-              node.connectedNodes.map(connectedId => {
-                const connectedNode = mapNodes.find(n => n.id === connectedId);
-                if (!connectedNode) return null;
-                
-                // Determine if the connection is discovered
-                const isDiscovered = node.discovered && connectedNode.discovered;
-                
-                return (
-                  <div 
-                    key={`${node.id}-${connectedId}`} 
-                    className={`absolute w-1 ${isDiscovered ? 'bg-gray-500' : 'bg-gray-600'} opacity-70`}
-                    style={{
-                      left: `${(node.x + connectedNode.x) / 2}px`,
-                      top: `${(node.y + connectedNode.y) / 2}px`,
-                      width: `${Math.sqrt(Math.pow(connectedNode.x - node.x, 2) + Math.pow(connectedNode.y - node.y, 2))}px`,
-                      transform: `rotate(${Math.atan2(connectedNode.y - node.y, connectedNode.x - node.x)}rad)`,
-                      transformOrigin: 'left center'
-                    }}
-                  />
-                );
-              })
-            ))}
+            {/* Grid-based map layout */}
+            <div className="grid grid-cols-3 grid-rows-5 gap-4 w-full h-full p-8">
+              {/* Row 1 - Old School */}
+              <div></div>
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Old School' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (currentNode?.connectedNodes.includes('school')) {
+                      setSelectedDestination('Old School');
+                    }
+                  }}
+                >
+                  🏫
+                </button>
+              </div>
+              <div></div>
+              
+              {/* Row 2 - Forest, Camp, Hospital */}
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Forest' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (currentNode?.connectedNodes.includes('forest')) {
+                      setSelectedDestination('Forest');
+                    }
+                  }}
+                >
+                  🌲
+                </button>
+              </div>
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Camp' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    setSelectedDestination('Camp');
+                  }}
+                >
+                  🏕️
+                </button>
+              </div>
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Hospital' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (currentNode?.connectedNodes.includes('hospital')) {
+                      setSelectedDestination('Hospital');
+                    }
+                  }}
+                >
+                  ✚
+                </button>
+              </div>
+              
+              {/* Row 3 - Farm */}
+              <div></div>
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Farm' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (currentNode?.connectedNodes.includes('farm')) {
+                      setSelectedDestination('Farm');
+                    }
+                  }}
+                >
+                  🌾
+                </button>
+              </div>
+              <div></div>
+              
+              {/* Row 4 - Riverside, Bridge Site */}
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Riverside' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (currentNode?.connectedNodes.includes('riverside')) {
+                      setSelectedDestination('Riverside');
+                    }
+                  }}
+                >
+                  🌊
+                </button>
+              </div>
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Bridge Site' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (currentNode?.connectedNodes.includes('bridge')) {
+                      setSelectedDestination('Bridge Site');
+                    }
+                  }}
+                >
+                  🌉
+                </button>
+              </div>
+              <div></div>
+              
+              {/* Row 5 - Harbor */}
+              <div></div>
+              <div className="flex justify-center items-center">
+                <button
+                  className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
+                    currentNode?.name === 'Harbor' 
+                      ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
+                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (currentNode?.connectedNodes.includes('harbor')) {
+                      setSelectedDestination('Harbor');
+                    }
+                  }}
+                >
+                  ⚓
+                </button>
+              </div>
+              <div></div>
+            </div>
             
-            {/* Nodes */}
-            {mapNodes.map(node => (
-              <button
-                key={node.id}
-                className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
-                  node.name === currentLocation 
-                    ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                    : node.discovered 
-                      ? 'bg-gray-700 border-gray-500 hover:bg-gray-600' 
-                      : 'bg-gray-900 border-gray-600 opacity-50'
-                }`}
-                style={{ left: `${node.x - 32}px`, top: `${node.y - 32}px` }}
-                onClick={() => {
-                  if (node.discovered && node.name !== currentLocation) {
-                    setSelectedDestination(node.name);
-                  }
-                }}
-                disabled={!node.discovered}
-              >
-                {node.discovered ? node.emoji : '???'}
-              </button>
-            ))}
+            {/* Connection lines */}
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Horizontal connections */}
+              <div className="absolute top-1/4 left-1/4 w-1/2 h-1 bg-gray-500"></div>
+              <div className="absolute top-1/2 left-1/4 w-1/2 h-1 bg-gray-500"></div>
+              <div className="absolute top-3/4 left-1/4 w-1/2 h-1 bg-gray-500"></div>
+              
+              {/* Vertical connections */}
+              <div className="absolute top-1/4 left-1/2 w-1 h-1/2 bg-gray-500"></div>
+              <div className="absolute top-1/4 left-1/3 w-1 h-1/2 bg-gray-500"></div>
+              <div className="absolute top-1/4 left-2/3 w-1 h-1/2 bg-gray-500"></div>
+            </div>
             
             {/* Current location indicator */}
             {currentNode && (
-              <div 
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center"
-                style={{ left: `${currentNode.x}px`, top: `${currentNode.y - 60}px` }}
-              >
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
                 <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
                   <p className="text-sm font-bold">{currentLocation}</p>
                 </div>
@@ -850,8 +958,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* Location Panel */}
-        <div className="w-[320px] p-6 bg-gray-800 border-r border-gray-700">
+        {/* Location Panel - 25% width */}
+        <div className="w-[25%] p-6 bg-gray-800 border-r border-gray-700">
           <h2 className="text-xl font-semibold mb-4">Location</h2>
           
           {currentNode ? (
