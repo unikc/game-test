@@ -14,3 +14,235 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Fallback CSS for when Tailwind might not be working */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.top-bar {
+  background-color: #1f2937;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #374151;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.left-panel {
+  background-color: #1f2937;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #374151;
+}
+
+.center-panel {
+  background-color: #1f2937;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #374151;
+  position: relative;
+  height: 520px;
+}
+
+.right-panel {
+  background-color: #1f2937;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #374151;
+}
+
+.action-bar {
+  background-color: #1f2937;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: bold;
+}
+
+.action-button:hover {
+  background-color: #2563eb;
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #111827;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.node.current {
+  background-color: #3b82f6;
+  border: 2px solid #60a5fa;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.node.discovered {
+  background-color: #374151;
+  border: 1px solid #4b5563;
+}
+
+.node.visited {
+  background-color: #4b5563;
+  border: 1px solid #6b7280;
+}
+
+.node.undiscovered {
+  background-color: #111827;
+  border: 1px solid #374151;
+  opacity: 0.5;
+}
+
+.node-label {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  white-space: nowrap;
+  font-size: 12px;
+  background-color: rgba(31, 41, 55, 0.9);
+  padding: 4px 8px;
+  border-radius: 4px;
+  z-index: 20;
+}
+
+.survivor-card {
+  background-color: #374151;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #4b5563;
+}
+
+.survivor-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.survivor-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: bold;
+}
+
+.survivor-name {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.survivor-profession {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.stat-bar {
+  margin-bottom: 12px;
+}
+
+.stat-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.stat-fill {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #374151;
+}
+
+.stat-fill-value {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.stat-fill-value.life {
+  background-color: #ef4444;
+}
+
+.stat-fill-value.hope {
+  background-color: #10b981;
+}
+
+.stat-fill-value.trust {
+  background-color: #3b82f6;
+}
+
+.location-details {
+  margin-bottom: 16px;
+}
+
+.location-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.location-description {
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.story-event {
+  background-color: #374151;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #4b5563;
+}
+
+.story-event-text {
+  margin-bottom: 8px;
+}
+
+.story-event-timestamp {
+  font-size: 12px;
+  color: #9ca3af;
+}

@@ -738,7 +738,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       {/* Top Status Bar */}
-      <div className="bg-gray-800 rounded-lg p-3 mb-4 flex justify-between items-center border border-gray-700">
+      <div className="top-bar">
         <div>
           <h1 className="text-2xl font-bold">Cozy Apocalypse</h1>
           <p className="text-gray-300">Day {Math.floor(gameTime / 24)} - Time: {gameTime % 24} hours</p>
@@ -752,175 +752,162 @@ export default function Home() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="main-content">
         {/* Left Column - Survivors */}
-        <div className="lg:col-span-1">
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
-            <h2 className="text-xl font-semibold mb-3">Survivors</h2>
-            <div className="space-y-3">
-              {survivors.map(survivor => (
-                <SurvivorCard 
-                  key={survivor.id} 
-                  survivor={survivor}
-                  isSelected={selectedSurvivor === survivor.id}
-                  onClick={() => setSelectedSurvivor(selectedSurvivor === survivor.id ? null : survivor.id)}
-                />
-              ))}
-            </div>
+        <div className="left-panel">
+          <h2 className="text-xl font-semibold mb-3">Survivors</h2>
+          <div className="space-y-3">
+            {survivors.map(survivor => (
+              <SurvivorCard 
+                key={survivor.id} 
+                survivor={survivor}
+                isSelected={selectedSurvivor === survivor.id}
+                onClick={() => setSelectedSurvivor(selectedSurvivor === survivor.id ? null : survivor.id)}
+              />
+            ))}
           </div>
         </div>
 
         {/* Center Column - Map */}
-        <div className="lg:col-span-1">
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
-            <h2 className="text-xl font-semibold mb-3">Map</h2>
+        <div className="center-panel">
+          <h2 className="text-xl font-semibold mb-3">Map</h2>
+          
+          <div className="map-container">
+            {/* Roads - rendered first to be behind nodes */}
+            {mapNodes.map(node => (
+              node.connectedNodes.map(connectedId => {
+                const connectedNode = mapNodes.find(n => n.id === connectedId);
+                if (!connectedNode) return null;
+                
+                return (
+                  <svg 
+                    key={`${node.id}-${connectedId}`} 
+                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                    style={{ zIndex: 1 }}
+                  >
+                    <line 
+                      x1={`${node.x}%`} 
+                      y1={`${node.y}%`} 
+                      x2={`${connectedNode.x}%`} 
+                      y2={`${connectedNode.y}%`} 
+                      stroke="#6b7280" 
+                      strokeWidth="2" 
+                      strokeDasharray="5,5"
+                    />
+                  </svg>
+                );
+              })
+            ))}
             
-            <div className="relative bg-gray-900 rounded-lg h-[500px] border border-gray-700 overflow-hidden">
-              {/* Roads - rendered first to be behind nodes */}
-              <div className="absolute inset-0 pointer-events-none">
-                {mapNodes.map(node => (
-                  node.connectedNodes.map(connectedId => {
-                    const connectedNode = mapNodes.find(n => n.id === connectedId);
-                    if (!connectedNode) return null;
-                    
-                    return (
-                      <svg key={`${node.id}-${connectedId}`} className="absolute top-0 left-0 w-full h-full">
-                        <line 
-                          x1={`${node.x}%`} 
-                          y1={`${node.y}%`} 
-                          x2={`${connectedNode.x}%`} 
-                          y2={`${connectedNode.y}%`} 
-                          stroke="#6b7280" 
-                          strokeWidth="2" 
-                          strokeDasharray="5,5"
-                        />
-                      </svg>
-                    );
-                  })
-                ))}
-              </div>
-              
-              {/* Nodes */}
-              {mapNodes.map(node => (
-                <button
-                  key={node.id}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center z-10 ${
-                    node.name === currentLocation 
-                      ? 'bg-blue-600 border-2 border-blue-400 ring-2 ring-blue-500' 
-                      : node.discovered 
-                        ? node.visited 
-                          ? 'bg-gray-700 hover:bg-gray-600 border border-gray-500' 
-                          : 'bg-gray-800 hover:bg-gray-700 border border-gray-600'
-                        : 'bg-gray-900 border border-gray-700 opacity-50 cursor-not-allowed'
-                  }`}
-                  style={{ left: `${node.x}%`, top: `${node.y}%`, width: '40px', height: '40px' }}
-                  onClick={() => {
-                    if (node.discovered && node.name !== currentLocation) {
-                      setSelectedDestination(node.name);
-                    }
-                  }}
-                  disabled={!node.discovered}
-                >
-                  {node.discovered ? (
-                    <span className="text-xs font-bold">{node.name.charAt(0)}</span>
-                  ) : (
-                    <span className="text-xs">???</span>
-                  )}
-                </button>
-              ))}
-              
-              {/* Current location indicator */}
-              {currentNode && (
-                <div 
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center z-20"
-                  style={{ left: `${currentNode.x}%`, top: `${currentNode.y - 5}%` }}
-                >
-                  <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
-                    <p className="text-sm font-bold">{currentLocation}</p>
-                  </div>
+            {/* Nodes */}
+            {mapNodes.map(node => (
+              <button
+                key={node.id}
+                className={`node ${
+                  node.name === currentLocation ? 'current' : 
+                  node.discovered ? (node.visited ? 'visited' : 'discovered') : 'undiscovered'
+                }`}
+                style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                onClick={() => {
+                  if (node.discovered && node.name !== currentLocation) {
+                    setSelectedDestination(node.name);
+                  }
+                }}
+                disabled={!node.discovered}
+              >
+                {node.discovered ? (
+                  <span className="text-xs font-bold">{node.name.charAt(0)}</span>
+                ) : (
+                  <span className="text-xs">???</span>
+                )}
+              </button>
+            ))}
+            
+            {/* Current location indicator */}
+            {currentNode && (
+              <div 
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center"
+                style={{ left: `${currentNode.x}%`, top: `${currentNode.y - 5}%` }}
+              >
+                <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
+                  <p className="text-sm font-bold">{currentLocation}</p>
                 </div>
-              )}
-            </div>
-            
-            {/* Selected destination indicator */}
-            {selectedDestination && (
-              <div className="mt-3 bg-gray-700 rounded-lg p-3 border border-gray-600">
-                <p className="text-sm">Selected: {selectedDestination}</p>
-                <p className="text-xs text-gray-300 mt-1">Click Travel to move here</p>
               </div>
             )}
           </div>
+          
+          {/* Selected destination indicator */}
+          {selectedDestination && (
+            <div className="mt-3 bg-gray-700 rounded-lg p-3 border border-gray-600">
+              <p className="text-sm">Selected: {selectedDestination}</p>
+              <p className="text-xs text-gray-300 mt-1">Click Travel to move here</p>
+            </div>
+          )}
         </div>
 
         {/* Right Column - Location Details */}
-        <div className="lg:col-span-1">
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
-            <h2 className="text-xl font-semibold mb-3">Location</h2>
-            
-            {currentNode ? (
-              <>
-                <h3 className="text-lg font-bold mb-2">{currentNode.name}</h3>
-                <p className="text-gray-300 mb-4">{currentNode.description}</p>
-                
-                <div className="mb-4">
-                  <h4 className="font-semibold mb-2">Story Events</h4>
-                  {currentStoryEvent ? (
-                    <div className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm">
-                      <p>{currentStoryEvent}</p>
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 text-sm">No events yet</p>
-                  )}
-                </div>
-                
-                <div className="mb-4">
-                  <h4 className="font-semibold mb-2">Destination</h4>
-                  <p className="text-gray-300">{survivors.find(s => s.name === currentLocation)?.destination || 'No destination'}</p>
-                </div>
-              </>
-            ) : (
-              <p className="text-gray-400">Select a location on the map</p>
-            )}
-          </div>
+        <div className="right-panel">
+          <h2 className="text-xl font-semibold mb-3">Location</h2>
+          
+          {currentNode ? (
+            <>
+              <h3 className="text-lg font-bold mb-2">{currentNode.name}</h3>
+              <p className="text-gray-300 mb-4">{currentNode.description}</p>
+              
+              <div className="mb-4">
+                <h4 className="font-semibold mb-2">Story Events</h4>
+                {currentStoryEvent ? (
+                  <div className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm">
+                    <p>{currentStoryEvent}</p>
+                  </div>
+                ) : (
+                  <p className="text-gray-400 text-sm">No events yet</p>
+                )}
+              </div>
+              
+              <div className="mb-4">
+                <h4 className="font-semibold mb-2">Destination</h4>
+                <p className="text-gray-300">{survivors.find(s => s.name === currentLocation)?.destination || 'No destination'}</p>
+              </div>
+            </>
+          ) : (
+            <p className="text-gray-400">Select a location on the map</p>
+          )}
         </div>
-      </main>
+      </div>
 
       {/* Bottom Action Bar */}
-      <div className="max-w-7xl mx-auto mt-6">
-        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <button 
-              onClick={handleExplore}
-              className="bg-blue-900 hover:bg-blue-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-            >
-              Explore
-            </button>
-            <button 
-              onClick={handleTravel}
-              className="bg-green-900 hover:bg-green-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-            >
-              Travel
-            </button>
-            <button 
-              onClick={handleTalk}
-              className="bg-purple-900 hover:bg-purple-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-            >
-              Talk
-            </button>
-            <button 
-              onClick={handleRest}
-              className="bg-yellow-900 hover:bg-yellow-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-            >
-              Rest
-            </button>
-            <button 
-              onClick={handleEndTime}
-              className="bg-red-900 hover:bg-red-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-            >
-              End Time
-            </button>
-          </div>
-        </div>
+      <div className="action-bar">
+        <button 
+          onClick={handleExplore}
+          className="action-button"
+        >
+          Explore
+        </button>
+        <button 
+          onClick={handleTravel}
+          className="action-button"
+        >
+          Travel
+        </button>
+        <button 
+          onClick={handleTalk}
+          className="action-button"
+        >
+          Talk
+        </button>
+        <button 
+          onClick={handleRest}
+          className="action-button"
+        >
+          Rest
+        </button>
+        <button 
+          onClick={handleEndTime}
+          className="action-button"
+        >
+          End Time
+        </button>
       </div>
 
       {/* Event Modal */}
