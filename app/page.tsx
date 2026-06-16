@@ -74,14 +74,14 @@ export default function Home() {
   ]);
   
   const [mapNodes] = useState([
-    { id: 'camp', name: 'Camp', discovered: true, visited: true, emoji: '🏕️', connectedNodes: ['forest', 'hospital'] },
-    { id: 'forest', name: 'Forest', discovered: false, visited: false, emoji: '🌲', connectedNodes: ['camp', 'hospital'] },
-    { id: 'hospital', name: 'Hospital', discovered: false, visited: false, emoji: '✚', connectedNodes: ['forest', 'school'] },
-    { id: 'school', name: 'Old School', discovered: false, visited: false, emoji: '🏫', connectedNodes: ['town', 'hospital', 'farm'] },
-    { id: 'farm', name: 'Farm', discovered: false, visited: false, emoji: '🌾', connectedNodes: ['school', 'riverside'] },
-    { id: 'riverside', name: 'Riverside', discovered: false, visited: false, emoji: '🌊', connectedNodes: ['farm', 'harbor'] },
-    { id: 'bridge', name: 'Bridge Site', discovered: false, visited: false, emoji: '🌉', connectedNodes: ['riverside'] },
-    { id: 'harbor', name: 'Harbor', discovered: false, visited: false, emoji: '⚓', connectedNodes: ['riverside'] }
+    { id: 'camp', name: 'Camp', discovered: true, visited: true, emoji: '🏕️', connectedNodes: ['forest', 'hospital'], x: 50, y: 30 },
+    { id: 'forest', name: 'Forest', discovered: false, visited: false, emoji: '🌲', connectedNodes: ['camp', 'hospital'], x: 20, y: 30 },
+    { id: 'hospital', name: 'Hospital', discovered: false, visited: false, emoji: '✚', connectedNodes: ['forest', 'school'], x: 80, y: 30 },
+    { id: 'school', name: 'Old School', discovered: false, visited: false, emoji: '🏫', connectedNodes: ['town', 'hospital', 'farm'], x: 50, y: 10 },
+    { id: 'farm', name: 'Farm', discovered: false, visited: false, emoji: '🌾', connectedNodes: ['school', 'riverside'], x: 40, y: 55 },
+    { id: 'riverside', name: 'Riverside', discovered: false, visited: false, emoji: '🌊', connectedNodes: ['farm', 'harbor'], x: 25, y: 80 },
+    { id: 'bridge', name: 'Bridge Site', discovered: false, visited: false, emoji: '🌉', connectedNodes: ['riverside'], x: 60, y: 55 },
+    { id: 'harbor', name: 'Harbor', discovered: false, visited: false, emoji: '⚓', connectedNodes: ['riverside'], x: 75, y: 80 }
   ]);
   
   const [currentLocation, setCurrentLocation] = useState('Camp');
@@ -234,30 +234,6 @@ export default function Home() {
           <h2 className="text-xl font-semibold mb-4">Map</h2>
           
           <div className="relative w-full h-[600px] bg-gray-900 rounded-lg overflow-hidden">
-            {/* SVG connections */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
-              {/* Old School -> Camp */}
-              <line x1="50%" y1="10%" x2="50%" y2="30%" stroke="#6b7280" strokeWidth="2" />
-              
-              {/* Forest -> Camp */}
-              <line x1="20%" y1="30%" x2="50%" y2="30%" stroke="#6b7280" strokeWidth="2" />
-              
-              {/* Camp -> Hospital */}
-              <line x1="50%" y1="30%" x2="80%" y2="30%" stroke="#6b7280" strokeWidth="2" />
-              
-              {/* Camp -> Farm */}
-              <line x1="50%" y1="30%" x2="40%" y2="55%" stroke="#6b7280" strokeWidth="2" />
-              
-              {/* Camp -> Bridge Site */}
-              <line x1="50%" y1="30%" x2="60%" y2="55%" stroke="#6b7280" strokeWidth="2" />
-              
-              {/* Farm -> Riverside */}
-              <line x1="40%" y1="55%" x2="25%" y2="80%" stroke="#6b7280" strokeWidth="2" />
-              
-              {/* Bridge Site -> Harbor */}
-              <line x1="60%" y1="55%" x2="75%" y2="80%" stroke="#6b7280" strokeWidth="2" />
-            </svg>
-            
             {/* Map nodes */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-full h-full">
@@ -268,11 +244,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '50%', top: '10%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'school')?.x}%`, top: `${mapNodes.find(n => n.id === 'school')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🏫
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '50%', top: '2%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'school')?.x}%`, top: `${mapNodes.find(n => n.id === 'school')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Old School
                 </div>
                 
@@ -283,11 +259,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '20%', top: '30%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'forest')?.x}%`, top: `${mapNodes.find(n => n.id === 'forest')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌲
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '20%', top: '22%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'forest')?.x}%`, top: `${mapNodes.find(n => n.id === 'forest')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Forest
                 </div>
                 
@@ -298,11 +274,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '50%', top: '30%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'camp')?.x}%`, top: `${mapNodes.find(n => n.id === 'camp')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🏕️
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '50%', top: '22%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'camp')?.x}%`, top: `${mapNodes.find(n => n.id === 'camp')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Camp
                 </div>
                 
@@ -313,11 +289,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '80%', top: '30%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'hospital')?.x}%`, top: `${mapNodes.find(n => n.id === 'hospital')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   ✚
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '80%', top: '22%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'hospital')?.x}%`, top: `${mapNodes.find(n => n.id === 'hospital')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Hospital
                 </div>
                 
@@ -328,11 +304,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '40%', top: '55%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'farm')?.x}%`, top: `${mapNodes.find(n => n.id === 'farm')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌾
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '40%', top: '47%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'farm')?.x}%`, top: `${mapNodes.find(n => n.id === 'farm')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Farm
                 </div>
                 
@@ -343,11 +319,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '60%', top: '55%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'bridge')?.x}%`, top: `${mapNodes.find(n => n.id === 'bridge')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌉
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '60%', top: '47%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'bridge')?.x}%`, top: `${mapNodes.find(n => n.id === 'bridge')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Bridge Site
                 </div>
                 
@@ -358,11 +334,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '25%', top: '80%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'riverside')?.x}%`, top: `${mapNodes.find(n => n.id === 'riverside')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌊
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '25%', top: '72%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'riverside')?.x}%`, top: `${mapNodes.find(n => n.id === 'riverside')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Riverside
                 </div>
                 
@@ -373,11 +349,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: '75%', top: '80%', transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${mapNodes.find(n => n.id === 'harbor')?.x}%`, top: `${mapNodes.find(n => n.id === 'harbor')?.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   ⚓
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: '75%', top: '72%', transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'harbor')?.x}%`, top: `${mapNodes.find(n => n.id === 'harbor')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Harbor
                 </div>
               </div>
