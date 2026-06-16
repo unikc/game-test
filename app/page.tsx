@@ -10,7 +10,7 @@ export default function Home() {
     { name: 'Morale', amount: 60, max: 100 }
   ]);
   
-  const [survivors] = useState([
+  const [survivors, setSurvivors] = useState([
     {
       id: '1',
       name: 'Elena',
@@ -21,7 +21,8 @@ export default function Home() {
       trust: 65,
       dream: 'I want to see my old school one last time.',
       destination: 'Old School',
-      distanceToDestination: 12
+      distanceToDestination: 12,
+      dead: false
     },
     {
       id: '2',
@@ -33,7 +34,8 @@ export default function Home() {
       trust: 80,
       dream: 'I want to see the ocean.',
       destination: 'Harbor',
-      distanceToDestination: 15
+      distanceToDestination: 15,
+      dead: false
     },
     {
       id: '3',
@@ -45,7 +47,8 @@ export default function Home() {
       trust: 75,
       dream: 'I want to finish the bridge I started.',
       destination: 'Bridge Site',
-      distanceToDestination: 10
+      distanceToDestination: 10,
+      dead: false
     },
     {
       id: '4',
@@ -57,7 +60,8 @@ export default function Home() {
       trust: 90,
       dream: 'I want to find my daughter.',
       destination: 'Riverside Settlement',
-      distanceToDestination: 20
+      distanceToDestination: 20,
+      dead: false
     },
     {
       id: '5',
@@ -69,11 +73,12 @@ export default function Home() {
       trust: 50,
       dream: 'I want to paint one more sunset.',
       destination: 'Sunset Viewpoint',
-      distanceToDestination: 8
+      distanceToDestination: 8,
+      dead: false
     }
   ]);
   
-  const [mapNodes] = useState([
+  const [mapNodes, setMapNodes] = useState([
     { id: 'camp', name: 'Camp', discovered: true, visited: true, emoji: '🏕️', connectedNodes: ['forest', 'hospital'], x: 50, y: 30 },
     { id: 'forest', name: 'Forest', discovered: false, visited: false, emoji: '🌲', connectedNodes: ['camp', 'hospital'], x: 20, y: 30 },
     { id: 'hospital', name: 'Hospital', discovered: false, visited: false, emoji: '✚', connectedNodes: ['forest', 'school'], x: 80, y: 30 },
@@ -86,104 +91,257 @@ export default function Home() {
   
   const [currentLocation, setCurrentLocation] = useState('Camp');
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
-  const [currentStoryEvent, setCurrentStoryEvent] = useState<string | null>(null);
+  const [currentStoryEvents, setCurrentStoryEvents] = useState<string[]>([]);
   const [expandedSurvivor, setExpandedSurvivor] = useState<string | null>(null);
 
   // Action functions
   const handleExplore = () => {
-    // Simulate exploring and finding resources
+    // Advance time
+    setGameTime(prev => prev + 3);
+    
+    // Random event based on current location
+    let eventText = '';
+    let foodChange = 0;
+    let medicineChange = 0;
+    let moraleChange = 0;
+    let hopeChange = 0;
+    let hopeTarget = null;
+    
+    const events = [
+      { text: "You found some supplies in the ruins.", food: 5, medicine: 0, morale: 0 },
+      { text: "The forest is full of strange sounds.", food: 0, medicine: 0, morale: 0 },
+      { text: "You discovered a hidden cache of food.", food: 5, medicine: 0, morale: 0 },
+      { text: "You found some medicine in an old pharmacy.", food: 0, medicine: 1, morale: 0 },
+      { text: "A survivor shared their thoughts and fears.", food: 0, medicine: 0, morale: 5 },
+      { text: "You had a meaningful conversation with someone.", food: 0, medicine: 0, morale: 5 }
+    ];
+    
+    const randomEvent = events[Math.floor(Math.random() * events.length)];
+    eventText = randomEvent.text;
+    
+    // Apply changes
     setResources(prev => 
-      prev.map(res => 
-        res.name === 'Food' ? { ...res, amount: Math.min(res.amount + 5, res.max) } : 
-        res.name === 'Medicine' ? { ...res, amount: Math.min(res.amount + 2, res.max) } : 
-        res
-      )
+      prev.map(res => {
+        if (res.name === 'Food') return { ...res, amount: Math.min(res.amount + randomEvent.food, res.max) };
+        if (res.name === 'Medicine') return { ...res, amount: Math.min(res.amount + randomEvent.medicine, res.max) };
+        if (res.name === 'Morale') return { ...res, amount: Math.min(res.amount + randomEvent.morale, res.max) };
+        return res;
+      })
     );
     
-    // Add a story event
-    const events = [
-      "You found some supplies in the ruins.",
-      "The forest is full of strange sounds.",
-      "You discovered a hidden cache of food."
-    ];
-    setCurrentStoryEvent(events[Math.floor(Math.random() * events.length)]);
+    // If it's a hope event, find a random survivor
+    if (randomEvent.hope > 0) {
+      const aliveSurvivors = survivors.filter(s => !s.dead);
+      if (aliveSurvivors.length > 0) {
+        const randomSurvivor = aliveSurvivors[Math.floor(Math.random() * aliveSurvivors.length)];
+        hopeTarget = randomSurvivor.name;
+        setSurvivors(prev => 
+          prev.map(s => 
+            s.name === hopeTarget ? { ...s, hope: Math.min(100, s.hope + 5) } : s
+          )
+        );
+        eventText += ` ${hopeTarget} gained hope.`;
+      }
+    }
+    
+    // Add story event
+    setCurrentStoryEvents(prev => {
+      const newEvents = [...prev, eventText];
+      return newEvents.slice(-5);
+    });
   };
 
   const handleTravel = () => {
     if (!selectedDestination) return;
     
+    // Check if destination is connected to current location
+    const currentNode = mapNodes.find(n => n.name === currentLocation);
+    const isAdjacent = currentNode?.connectedNodes.includes(selectedDestination);
+    
+    if (!isAdjacent) {
+      setCurrentStoryEvents(prev => [...prev, "You cannot travel there directly."].slice(-5));
+      return;
+    }
+    
     // Update current location
     setCurrentLocation(selectedDestination);
     
-    // Mark destination as visited
+    // Advance time
+    setGameTime(prev => prev + 6);
+    
+    // Consume food
     setResources(prev => 
       prev.map(res => 
-        res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - 1) } : 
+        res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - 5) } : 
         res
       )
     );
     
-    // Add a story event
-    const events = [
-      "The journey was long but rewarding.",
-      "You found a new path through the wilderness.",
-      "The landscape changed as you traveled."
-    ];
-    setCurrentStoryEvent(events[Math.floor(Math.random() * events.length)]);
+    // Add story event
+    setCurrentStoryEvents(prev => [...prev, `The group traveled to ${selectedDestination}.`].slice(-5));
+    
+    // Reveal one connected undiscovered node
+    const currentMapNode = mapNodes.find(n => n.name === selectedDestination);
+    if (currentMapNode) {
+      const undiscoveredNodes = currentMapNode.connectedNodes.filter(nodeName => {
+        const node = mapNodes.find(n => n.name === nodeName);
+        return node && !node.discovered;
+      });
+      
+      if (undiscoveredNodes.length > 0) {
+        const randomUndiscovered = undiscoveredNodes[Math.floor(Math.random() * undiscoveredNodes.length)];
+        setMapNodes(prev => 
+          prev.map(node => 
+            node.name === randomUndiscovered ? { ...node, discovered: true } : node
+          )
+        );
+      }
+    }
+    
+    // Check if any survivor reached their destination
+    const reachedSurvivors = survivors.filter(s => !s.dead && s.destination === selectedDestination);
+    if (reachedSurvivors.length > 0) {
+      setSurvivors(prev => 
+        prev.map(s => {
+          if (reachedSurvivors.some(rs => rs.name === s.name)) {
+            return { 
+              ...s, 
+              hope: Math.min(100, s.hope + 30),
+              trust: Math.min(100, s.trust + 20)
+            };
+          }
+          return s;
+        })
+      );
+      
+      const survivorNames = reachedSurvivors.map(s => s.name).join(', ');
+      setCurrentStoryEvents(prev => [...prev, `${survivorNames} reached their Ithaca: ${selectedDestination}.`].slice(-5));
+    }
     
     setSelectedDestination(null);
   };
 
   const handleTalk = () => {
-    setResources(prev => 
-      prev.map(res => 
-        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + 5, res.max) } : 
-        res
-      )
+    // Advance time
+    setGameTime(prev => prev + 2);
+    
+    // Choose a random survivor
+    const aliveSurvivors = survivors.filter(s => !s.dead);
+    if (aliveSurvivors.length === 0) return;
+    
+    const randomSurvivor = aliveSurvivors[Math.floor(Math.random() * aliveSurvivors.length)];
+    
+    // Increase hope or trust
+    const increaseType = Math.random() > 0.5 ? 'hope' : 'trust';
+    const increaseValue = 5;
+    
+    setSurvivors(prev => 
+      prev.map(s => {
+        if (s.name === randomSurvivor.name) {
+          return { 
+            ...s, 
+            [increaseType]: Math.min(100, s[increaseType] + increaseValue) 
+          };
+        }
+        return s;
+      })
     );
     
-    // Add a story event
-    const events = [
-      "The group shared their thoughts and fears.",
-      "You had a meaningful conversation with someone.",
-      "A survivor shared an old memory."
-    ];
-    setCurrentStoryEvent(events[Math.floor(Math.random() * events.length)]);
+    // Add story event
+    setCurrentStoryEvents(prev => [...prev, `${randomSurvivor.name} shared why they want to reach ${randomSurvivor.destination}.`].slice(-5));
   };
 
   const handleRest = () => {
+    // Advance time
+    setGameTime(prev => prev + 8);
+    
+    // Increase morale
     setResources(prev => 
       prev.map(res => 
-        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + 5, res.max) } : 
+        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + 10, res.max) } : 
         res
       )
     );
     
-    // Add a story event
-    const events = [
-      "You all rested and recovered.",
-      "The night was peaceful.",
-      "You felt a sense of calm."
-    ];
-    setCurrentStoryEvent(events[Math.floor(Math.random() * events.length)]);
+    // Consume food
+    setResources(prev => 
+      prev.map(res => 
+        res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - 3) } : 
+        res
+      )
+    );
+    
+    // Add story event
+    setCurrentStoryEvents(prev => [...prev, "The group rested for the night."].slice(-5));
   };
 
   const handleEndTime = () => {
-    // Advance time
+    // Advance to next day
     setGameTime(prev => prev + 24);
     
-    // Add a story event
-    const events = [
-      "The day passed quietly.",
-      "You reflected on the journey.",
-      "The sun set behind the horizon."
-    ];
-    setCurrentStoryEvent(events[Math.floor(Math.random() * events.length)]);
+    // All survivors lose life
+    setSurvivors(prev => 
+      prev.map(s => {
+        if (s.dead) return s;
+        const newLife = Math.max(0, s.life - 1);
+        if (newLife <= 0) {
+          setCurrentStoryEvents(prevEvents => [...prevEvents, `${s.name} did not survive the night.`].slice(-5));
+          return { ...s, life: 0, dead: true };
+        }
+        return { ...s, life: newLife };
+      })
+    );
+    
+    // Morale decreases
+    setResources(prev => 
+      prev.map(res => 
+        res.name === 'Morale' ? { ...res, amount: Math.max(0, res.amount - 3) } : 
+        res
+      )
+    );
+    
+    // Food consumption
+    const foodConsumed = survivors.filter(s => !s.dead).length;
+    setResources(prev => 
+      prev.map(res => 
+        res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - foodConsumed) } : 
+        res
+      )
+    );
+    
+    // Add overnight event
+    setCurrentStoryEvents(prev => [...prev, "The night passed quietly."].slice(-5));
   };
 
   // New function to select a destination
   const handleSelectDestination = (destination: string) => {
     setSelectedDestination(destination);
+    
+    // Update location panel with destination info
+    const node = mapNodes.find(n => n.name === destination);
+    if (node) {
+      // Highlight the selected node
+      setMapNodes(prev => 
+        prev.map(n => 
+          n.name === destination ? { ...n, highlighted: true } : { ...n, highlighted: false }
+        )
+      );
+    }
+  };
+
+  // Function to handle map node click
+  const handleNodeClick = (nodeName: string) => {
+    if (nodeName === currentLocation) return;
+    
+    // Check if node is connected to current location
+    const currentNode = mapNodes.find(n => n.name === currentLocation);
+    const isAdjacent = currentNode?.connectedNodes.includes(nodeName);
+    
+    if (isAdjacent) {
+      handleSelectDestination(nodeName);
+    } else {
+      setCurrentStoryEvents(prev => [...prev, "You cannot travel there directly."].slice(-5));
+    }
   };
 
   return (
@@ -209,7 +367,7 @@ export default function Home() {
           {survivors.map(survivor => (
             <div 
               key={survivor.id} 
-              className="w-44 bg-gray-700 rounded-lg p-3 border border-gray-600 flex flex-col"
+              className={`w-44 bg-gray-700 rounded-lg p-3 border ${survivor.dead ? 'border-gray-600 opacity-50' : 'border-gray-600'} flex flex-col`}
               style={{ height: '112px' }}
             >
               <div className="flex items-center mb-2">
@@ -247,9 +405,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Old School' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Old School'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Old School')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Old School')}
                 >
                   🏫
                 </button>
@@ -262,9 +425,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Forest' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Forest'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Forest')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Forest')}
                 >
                   🌲
                 </button>
@@ -277,9 +445,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Camp' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Camp'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Camp')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Camp')}
                 >
                   🏕️
                 </button>
@@ -292,9 +465,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Hospital' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Hospital'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Hospital')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Hospital')}
                 >
                   ✚
                 </button>
@@ -307,9 +485,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Farm' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Farm'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Farm')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Farm')}
                 >
                   🌾
                 </button>
@@ -322,9 +505,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Bridge Site' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Bridge Site'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Bridge Site')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Bridge Site')}
                 >
                   🌉
                 </button>
@@ -337,9 +525,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Riverside' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Riverside'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Riverside')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Riverside')}
                 >
                   🌊
                 </button>
@@ -352,9 +545,14 @@ export default function Home() {
                   className={`absolute w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 z-10 ${
                     currentLocation === 'Harbor' 
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
-                      : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                      : selectedDestination === 'Harbor'
+                        ? 'bg-yellow-600 border-yellow-400'
+                        : mapNodes.find(n => n.name === 'Harbor')?.discovered
+                          ? 'bg-gray-700 border-gray-500 hover:bg-gray-600'
+                          : 'bg-gray-900 border-gray-800 opacity-50'
                   }`}
                   style={{ left: `${(mapNodes.find(n => n.id === 'harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
+                  onClick={() => handleNodeClick('Harbor')}
                 >
                   ⚓
                 </button>
@@ -410,9 +608,11 @@ export default function Home() {
             
             <div className="mb-4">
               <h4 className="font-semibold mb-2">Story Events</h4>
-              {currentStoryEvent ? (
+              {currentStoryEvents.length > 0 ? (
                 <div className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm">
-                  <p>{currentStoryEvent}</p>
+                  {currentStoryEvents.map((event, index) => (
+                    <p key={index} className="mb-1 last:mb-0">{event}</p>
+                  ))}
                 </div>
               ) : (
                 <p className="text-gray-400 text-sm">No events yet</p>
@@ -436,18 +636,8 @@ export default function Home() {
           Explore
         </button>
         <button 
-          onClick={() => {
-            // Show destination selection when Travel is clicked
-            const destinations = survivors.map(s => s.destination);
-            const uniqueDestinations = [...new Set(destinations)];
-            
-            // Create a temporary UI to select destination
-            if (uniqueDestinations.length > 0) {
-              // In a real implementation, this would show a dropdown or modal
-              // For now, we'll just select the first one for demonstration
-              handleSelectDestination(uniqueDestinations[0]);
-            }
-          }}
+          onClick={handleTravel}
+          disabled={!selectedDestination}
           className="action-button"
         >
           Travel
