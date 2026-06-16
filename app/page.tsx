@@ -244,11 +244,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'school')?.x}%`, top: `${mapNodes.find(n => n.id === 'school')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🏫
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'school')?.x}%`, top: `${mapNodes.find(n => n.id === 'school')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'school')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'school')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Old School
                 </div>
                 
@@ -259,11 +259,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'forest')?.x}%`, top: `${mapNodes.find(n => n.id === 'forest')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌲
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'forest')?.x}%`, top: `${mapNodes.find(n => n.id === 'forest')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'forest')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'forest')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Forest
                 </div>
                 
@@ -274,11 +274,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'camp')?.x}%`, top: `${mapNodes.find(n => n.id === 'camp')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🏕️
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'camp')?.x}%`, top: `${mapNodes.find(n => n.id === 'camp')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'camp')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'camp')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Camp
                 </div>
                 
@@ -289,11 +289,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'hospital')?.x}%`, top: `${mapNodes.find(n => n.id === 'hospital')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   ✚
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'hospital')?.x}%`, top: `${mapNodes.find(n => n.id === 'hospital')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'hospital')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'hospital')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Hospital
                 </div>
                 
@@ -304,11 +304,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'farm')?.x}%`, top: `${mapNodes.find(n => n.id === 'farm')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌾
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'farm')?.x}%`, top: `${mapNodes.find(n => n.id === 'farm')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'farm')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'farm')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Farm
                 </div>
                 
@@ -319,11 +319,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'bridge')?.x}%`, top: `${mapNodes.find(n => n.id === 'bridge')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌉
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'bridge')?.x}%`, top: `${mapNodes.find(n => n.id === 'bridge')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'bridge')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'bridge')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Bridge Site
                 </div>
                 
@@ -334,11 +334,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'riverside')?.x}%`, top: `${mapNodes.find(n => n.id === 'riverside')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   🌊
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'riverside')?.x}%`, top: `${mapNodes.find(n => n.id === 'riverside')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'riverside')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'riverside')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Riverside
                 </div>
                 
@@ -349,11 +349,11 @@ export default function Home() {
                       ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' 
                       : 'bg-gray-700 border-gray-500 hover:bg-gray-600'
                   }`}
-                  style={{ left: `${mapNodes.find(n => n.id === 'harbor')?.x}%`, top: `${mapNodes.find(n => n.id === 'harbor')?.y}%`, transform: 'translate(-50%, -50%)' }}
+                  style={{ left: `${(mapNodes.find(n => n.id === 'harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0)}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   ⚓
                 </button>
-                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${mapNodes.find(n => n.id === 'harbor')?.x}%`, top: `${mapNodes.find(n => n.id === 'harbor')?.y - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
+                <div className="absolute text-sm font-bold whitespace-nowrap" style={{ left: `${(mapNodes.find(n => n.id === 'harbor')?.x ?? 0)}%`, top: `${(mapNodes.find(n => n.id === 'harbor')?.y ?? 0) - 8}%`, transform: 'translateX(-50%)', zIndex: 20 }}>
                   Harbor
                 </div>
               </div>
