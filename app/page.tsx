@@ -252,7 +252,7 @@ export default function Home() {
             <div className="grid grid-cols-3 grid-rows-5 gap-4 w-full h-full p-8">
               {/* Row 1 - Old School */}
               <div></div>
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Old School' 
@@ -262,11 +262,14 @@ export default function Home() {
                 >
                   🏫
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Old School
+                </div>
               </div>
               <div></div>
               
               {/* Row 2 - Forest, Camp, Hospital */}
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Forest' 
@@ -276,8 +279,11 @@ export default function Home() {
                 >
                   🌲
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Forest
+                </div>
               </div>
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Camp' 
@@ -287,8 +293,11 @@ export default function Home() {
                 >
                   🏕️
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Camp
+                </div>
               </div>
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Hospital' 
@@ -298,11 +307,14 @@ export default function Home() {
                 >
                   ✚
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Hospital
+                </div>
               </div>
               
               {/* Row 3 - Farm */}
               <div></div>
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Farm' 
@@ -312,11 +324,14 @@ export default function Home() {
                 >
                   🌾
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Farm
+                </div>
               </div>
               <div></div>
               
               {/* Row 4 - Riverside, Bridge Site */}
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Riverside' 
@@ -326,8 +341,11 @@ export default function Home() {
                 >
                   🌊
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Riverside
+                </div>
               </div>
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Bridge Site' 
@@ -337,12 +355,15 @@ export default function Home() {
                 >
                   🌉
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Bridge Site
+                </div>
               </div>
               <div></div>
               
               {/* Row 5 - Harbor */}
               <div></div>
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center relative">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-2 transition-all duration-200 ${
                     currentLocation === 'Harbor' 
@@ -352,6 +373,9 @@ export default function Home() {
                 >
                   ⚓
                 </button>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                  Harbor
+                </div>
               </div>
               <div></div>
             </div>
