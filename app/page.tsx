@@ -745,9 +745,9 @@ export default function Home() {
   const currentNode = mapNodes.find(node => node.name === currentLocation);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
+    <div className="h-screen overflow-hidden bg-slate-950 text-white flex flex-col p-4 gap-3">
       {/* Top Bar */}
-      <div className="h-20 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-6">
+      <header className="h-20 bg-gray-800 rounded-lg flex items-center justify-between px-6">
         <div>
           <h1 className="text-2xl font-bold">Cozy Apocalypse</h1>
           <p className="text-gray-300 text-sm">Day {Math.floor(gameTime / 24)} - Time: {gameTime % 24} hours</p>
@@ -759,10 +759,10 @@ export default function Home() {
             <p className="text-sm">Morale: {resources[2].amount}</p>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Survivors Row */}
-      <div className="flex overflow-x-auto py-4 px-6 space-x-4 bg-gray-800 border-b border-gray-700">
+      <section className="flex overflow-x-auto py-4 px-2 space-x-4 bg-gray-800 rounded-lg">
         {survivors.map(survivor => (
           <SurvivorCard 
             key={survivor.id} 
@@ -771,12 +771,12 @@ export default function Home() {
             onClick={() => setSelectedSurvivor(selectedSurvivor === survivor.id ? null : survivor.id)}
           />
         ))}
-      </div>
+      </section>
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Map Panel - 75% width */}
-        <div className="w-[75%] p-6 bg-gray-800 border-r border-gray-700">
+      <main className="flex-1 min-h-0 grid grid-cols-[1fr_320px] gap-3">
+        {/* Map Panel */}
+        <section className="bg-gray-800 rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-4">Map</h2>
           
           <div className="relative w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden">
@@ -956,10 +956,10 @@ export default function Home() {
               <p className="text-xs text-gray-300 mt-1">Click Travel to move here</p>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Location Panel - 25% width */}
-        <div className="w-[25%] p-6 bg-gray-800 border-r border-gray-700">
+        {/* Location Panel */}
+        <aside className="bg-gray-800 rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-4">Location</h2>
           
           {currentNode ? (
@@ -986,11 +986,11 @@ export default function Home() {
           ) : (
             <p className="text-gray-400">Select a location on the map</p>
           )}
-        </div>
-      </div>
+        </aside>
+      </main>
 
       {/* Bottom Action Bar */}
-      <div className="h-20 bg-gray-800 border-t border-gray-700 flex items-center justify-center space-x-4 sticky bottom-0">
+      <footer className="h-20 bg-gray-800 rounded-lg flex items-center justify-center space-x-4 sticky bottom-0">
         <button 
           onClick={handleExplore}
           className="action-button"
@@ -1021,7 +1021,7 @@ export default function Home() {
         >
           End Time
         </button>
-      </div>
+      </footer>
 
       {/* Event Modal */}
       {showEventModal && currentEvent && (
