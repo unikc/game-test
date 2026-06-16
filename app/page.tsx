@@ -186,7 +186,7 @@ export default function Home() {
       {/* Top Bar */}
       <header className="h-20 bg-gray-800 rounded-lg flex items-center justify-between px-6">
         <div>
-          <h1 className="text-2xl font-bold">Cozy Apocalypse</h1>
+          <h1 className="text-2xl font-bold">Cozy Apocalypse v2</h1>
           <p className="text-gray-300 text-sm">Day {Math.floor(gameTime / 24)} - Time: {gameTime % 24} hours</p>
         </div>
         <div className="flex space-x-6">
