@@ -183,6 +183,10 @@ export default function Home() {
 
   return (
     <div className="h-screen overflow-hidden bg-slate-950 text-white flex flex-col p-4 gap-3">
+      <div className="fixed top-0 left-0 z-[9999] bg-red-600 text-white text-4xl p-4">
+        TEST NEW FILE
+      </div>
+      
       {/* Top Bar */}
       <header className="h-20 bg-gray-800 rounded-lg flex items-center justify-between px-6">
         <div>
