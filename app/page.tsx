@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import SurvivorCard from './components/SurvivorCard';
-import CampStatus from './components/CampStatus';
-import StoryFeed from './components/StoryFeed';
 
 // Types
 type Survivor = {
@@ -49,11 +47,16 @@ type Memory = {
   timestamp: number;
 };
 
-type JourneyNode = {
+type MapNode = {
   id: string;
   name: string;
-  type: 'camp' | 'town' | 'school' | 'hospital' | 'harbor' | 'settlement';
-  connections: { nodeId: string; distance: number }[];
+  x: number;
+  y: number;
+  description: string;
+  discovered: boolean;
+  visited: boolean;
+  connectedNodes: string[];
+  storyEvents: string[];
 };
 
 // Initial data
@@ -124,6 +127,126 @@ const initialResources: Resource[] = [
   { name: 'Food', amount: 50, max: 100 },
   { name: 'Medicine', amount: 20, max: 50 },
   { name: 'Morale', amount: 60, max: 100 }
+];
+
+const initialMapNodes: MapNode[] = [
+  {
+    id: 'camp',
+    name: 'Camp',
+    x: 50,
+    y: 50,
+    description: 'Your base of operations. A small shelter built from scavenged materials.',
+    discovered: true,
+    visited: true,
+    connectedNodes: ['forest', 'town'],
+    storyEvents: [
+      "You set up camp in the clearing. The smell of smoke lingers in the air.",
+      "The group gathers around the fire, sharing stories of better times."
+    ]
+  },
+  {
+    id: 'forest',
+    name: 'North Forest',
+    x: 20,
+    y: 30,
+    description: 'A dense forest with tall trees and thick undergrowth. The air is thick with mystery.',
+    discovered: false,
+    visited: false,
+    connectedNodes: ['camp', 'hospital'],
+    storyEvents: [
+      "The forest is eerily quiet. You hear something rustling in the bushes.",
+      "You find a small stream running through the trees. It's clear and fresh."
+    ]
+  },
+  {
+    id: 'town',
+    name: 'Abandoned Town',
+    x: 80,
+    y: 30,
+    description: 'A once-bustling town now silent and empty. Buildings stand in ruins.',
+    discovered: false,
+    visited: false,
+    connectedNodes: ['camp', 'school'],
+    storyEvents: [
+      "The streets are littered with debris. You find a child's toy in the rubble.",
+      "You hear voices from an abandoned building. They fade quickly."
+    ]
+  },
+  {
+    id: 'hospital',
+    name: 'Hospital',
+    x: 20,
+    y: 70,
+    description: 'A crumbling hospital building with broken windows and a faded sign.',
+    discovered: false,
+    visited: false,
+    connectedNodes: ['forest', 'school'],
+    storyEvents: [
+      "You found a locked medicine cabinet.",
+      "Maya recognizes the smell of disinfectant and goes quiet.",
+      "The hospital is filled with echoes of past suffering."
+    ]
+  },
+  {
+    id: 'school',
+    name: 'Old School',
+    x: 80,
+    y: 70,
+    description: 'An old school building with broken windows and a faded sign.',
+    discovered: false,
+    visited: false,
+    connectedNodes: ['town', 'hospital', 'farm'],
+    storyEvents: [
+      "Michael finds his old classroom. The blackboard still has his handwriting.",
+      "You find a collection of student drawings on the wall.",
+      "The school bell still rings in your memory."
+    ]
+  },
+  {
+    id: 'farm',
+    name: 'Farm',
+    x: 50,
+    y: 90,
+    description: 'An abandoned farm with overgrown fields and broken fences.',
+    discovered: false,
+    visited: false,
+    connectedNodes: ['school', 'riverside'],
+    storyEvents: [
+      "The soil is dry, but something still grows here.",
+      "You find a small garden that someone tended to before the pandemic.",
+      "A barn creaks in the wind. You hear something moving inside."
+    ]
+  },
+  {
+    id: 'riverside',
+    name: 'Riverside',
+    x: 20,
+    y: 90,
+    description: 'A quiet riverside with a small bridge and clear water.',
+    discovered: false,
+    visited: false,
+    connectedNodes: ['farm', 'harbor'],
+    storyEvents: [
+      "A message is carved into the bridge: THEY WENT EAST.",
+      "The river flows calmly. You feel a sense of peace here.",
+      "You find an old fishing net tangled in the reeds."
+    ]
+  },
+  {
+    id: 'harbor',
+    name: 'Harbor',
+    x: 20,
+    y: 10,
+    description: 'A quiet harbor with boats and a lighthouse.',
+    discovered: false,
+    visited: false,
+    connectedNodes: ['riverside'],
+    storyEvents: [
+      "Sarah sees the ocean for the first time in years.",
+      "The waves crash against the rocks. You feel the vastness of the world.",
+      "You find a small boat that might still be seaworthy."
+    ]
+  }
 ];
 
 const initialEvents: Event[] = [
@@ -354,57 +477,6 @@ const initialEvents: Event[] = [
   }
 ];
 
-const journeyMap: JourneyNode[] = [
-  {
-    id: 'camp',
-    name: 'Camp',
-    type: 'camp',
-    connections: [
-      { nodeId: 'town', distance: 3 },
-      { nodeId: 'school', distance: 5 }
-    ]
-  },
-  {
-    id: 'town',
-    name: 'Town',
-    type: 'town',
-    connections: [
-      { nodeId: 'school', distance: 4 },
-      { nodeId: 'hospital', distance: 6 }
-    ]
-  },
-  {
-    id: 'school',
-    name: 'Old School',
-    type: 'school',
-    connections: [
-      { nodeId: 'harbor', distance: 8 }
-    ]
-  },
-  {
-    id: 'hospital',
-    name: 'Hospital',
-    type: 'hospital',
-    connections: [
-      { nodeId: 'harbor', distance: 5 }
-    ]
-  },
-  {
-    id: 'harbor',
-    name: 'Harbor',
-    type: 'harbor',
-    connections: []
-  },
-  {
-    id: 'settlement',
-    name: 'Riverside Settlement',
-    type: 'settlement',
-    connections: [
-      { nodeId: 'camp', distance: 10 }
-    ]
-  }
-];
-
 export default function Home() {
   const [survivors, setSurvivors] = useState<Survivor[]>(initialSurvivors);
   const [resources, setResources] = useState<Resource[]>(initialResources);
@@ -413,11 +485,14 @@ export default function Home() {
   const [gameTime, setGameTime] = useState(0);
   const [showEventModal, setShowEventModal] = useState(false);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([
-    { id: '1', message: 'Welcome to Road to Ithaca', timestamp: Date.now() }
+    { id: '1', message: 'Welcome to Cozy Apocalypse', timestamp: Date.now() }
   ]);
   const [selectedSurvivor, setSelectedSurvivor] = useState<string | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [currentLocation, setCurrentLocation] = useState('Camp');
+  const [mapNodes, setMapNodes] = useState<MapNode[]>(initialMapNodes);
+  const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
+  const [currentStoryEvent, setCurrentStoryEvent] = useState<string | null>(null);
 
   // Add log entry
   const addLogEntry = (message: string) => {
@@ -458,59 +533,105 @@ export default function Home() {
 
   // Action functions
   const handleExplore = () => {
-    const foodGain = Math.floor(Math.random() * 10) + 5;
-    const moraleGain = Math.floor(Math.random() * 5) + 2;
+    // Find current location node
+    const currentNode = mapNodes.find(node => node.name === currentLocation);
     
-    setResources(prev => 
-      prev.map(res => 
-        res.name === 'Food' ? { ...res, amount: Math.min(res.amount + foodGain, res.max) } : 
-        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + moraleGain, res.max) } : 
-        res
-      )
-    );
-    
-    addLogEntry(`Exploration yielded ${foodGain} food and ${moraleGain} morale`);
-  };
-
-  const handleTravel = () => {
-    // Find the current location node
-    const currentNode = journeyMap.find(node => node.name === currentLocation);
-    
-    if (currentNode && currentNode.connections.length > 0) {
-      // Select a random destination
-      const randomConnection = currentNode.connections[Math.floor(Math.random() * currentNode.connections.length)];
+    if (currentNode) {
+      // Randomly select a story event from this location
+      const randomEvent = currentNode.storyEvents[Math.floor(Math.random() * currentNode.storyEvents.length)];
+      setCurrentStoryEvent(randomEvent);
+      
+      // Add some resources randomly
+      const foodGain = Math.floor(Math.random() * 5) + 1;
+      const medicineGain = Math.floor(Math.random() * 3);
       
       setResources(prev => 
         prev.map(res => 
-          res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - randomConnection.distance) } : 
+          res.name === 'Food' ? { ...res, amount: Math.min(res.amount + foodGain, res.max) } : 
+          res.name === 'Medicine' ? { ...res, amount: Math.min(res.amount + medicineGain, res.max) } : 
+          res
+        )
+      );
+      
+      addLogEntry(`Explored ${currentLocation} and found ${foodGain} food and ${medicineGain} medicine`);
+    }
+  };
+
+  const handleTravel = () => {
+    if (!selectedDestination) {
+      addLogEntry('Select a connected location on the map first.');
+      return;
+    }
+
+    // Find current location node
+    const currentNode = mapNodes.find(node => node.name === currentLocation);
+    
+    if (currentNode && currentNode.connectedNodes.includes(selectedDestination)) {
+      // Check if destination is discovered
+      const destinationNode = mapNodes.find(node => node.name === selectedDestination);
+      
+      if (!destinationNode || !destinationNode.discovered) {
+        addLogEntry('You cannot travel to an undiscovered location.');
+        return;
+      }
+      
+      // Consume resources
+      setResources(prev => 
+        prev.map(res => 
+          res.name === 'Food' ? { ...res, amount: Math.max(0, res.amount - 1) } : 
           res
         )
       );
       
       // Update current location
-      setCurrentLocation(journeyMap.find(node => node.id === randomConnection.nodeId)?.name || '');
+      setCurrentLocation(selectedDestination);
       
-      // Update survivor distances
-      setSurvivors(prev => 
-        prev.map(survivor => {
-          if (survivor.distanceToDestination > 0) {
-            return { ...survivor, distanceToDestination: Math.max(0, survivor.distanceToDestination - randomConnection.distance) };
-          }
-          return survivor;
-        })
+      // Mark destination as visited
+      setMapNodes(prev => 
+        prev.map(node => 
+          node.name === selectedDestination ? { ...node, visited: true } : node
+        )
       );
       
-      addLogEntry(`Traveled to ${journeyMap.find(node => node.id === randomConnection.nodeId)?.name}`);
+      // Reveal connected undiscovered nodes
+      if (destinationNode) {
+        const updatedNodes = mapNodes.map(node => {
+          if (destinationNode.connectedNodes.includes(node.id) && !node.discovered) {
+            return { ...node, discovered: true };
+          }
+          return node;
+        });
+        setMapNodes(updatedNodes);
+      }
+      
+      // Add story event
+      const randomEvent = destinationNode.storyEvents[Math.floor(Math.random() * destinationNode.storyEvents.length)];
+      setCurrentStoryEvent(randomEvent);
+      
+      addLogEntry(`Traveled to ${selectedDestination}`);
+      setSelectedDestination(null);
     } else {
-      addLogEntry('No valid travel destination');
+      addLogEntry('You cannot travel there from your current location.');
     }
   };
 
   const handleTalk = () => {
     setResources(prev => 
       prev.map(res => 
-        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + 10, res.max) } : 
+        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + 5, res.max) } : 
         res
+      )
+    );
+    
+    // Randomly increase hope or trust for a survivor
+    const randomSurvivor = survivors[Math.floor(Math.random() * survivors.length)];
+    const statIncrease = Math.floor(Math.random() * 10) + 1;
+    
+    setSurvivors(prev => 
+      prev.map(s => 
+        s.id === randomSurvivor.id 
+          ? { ...s, hope: Math.min(100, s.hope + statIncrease), trust: Math.min(100, s.trust + statIncrease) } 
+          : s
       )
     );
     
@@ -520,12 +641,36 @@ export default function Home() {
   const handleRest = () => {
     setResources(prev => 
       prev.map(res => 
-        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + 15, res.max) } : 
+        res.name === 'Morale' ? { ...res, amount: Math.min(res.amount + 5, res.max) } : 
         res
       )
     );
     
     addLogEntry('Group rested and recovered');
+  };
+
+  const handleEndTime = () => {
+    // Advance to next day
+    setGameTime(prev => prev + 24);
+    
+    // Every survivor loses 1 life day
+    setSurvivors(prev => 
+      prev.map(survivor => ({
+        ...survivor,
+        life: Math.max(0, survivor.life - 1)
+      }))
+    );
+    
+    // Add one random overnight event
+    const overnightEvents = [
+      "The night was restless. You heard strange sounds outside.",
+      "You woke up to find a note on your pillow.",
+      "A survivor had a dream about their family.",
+      "The group huddled together for warmth."
+    ];
+    
+    const randomEvent = overnightEvents[Math.floor(Math.random() * overnightEvents.length)];
+    addLogEntry(randomEvent);
   };
 
   // Update life each day
@@ -587,21 +732,23 @@ export default function Home() {
     return Math.max(0, Math.min(100, ((totalDistance - survivor.distanceToDestination) / totalDistance) * 100));
   };
 
+  // Get current location node
+  const currentNode = mapNodes.find(node => node.name === currentLocation);
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       {/* Top Status Bar */}
       <div className="bg-gray-800 rounded-lg p-3 mb-4 flex justify-between items-center border border-gray-700">
         <div>
-          <h1 className="text-2xl font-bold">Road to Ithaca</h1>
-          <p className="text-gray-300">Day {gameTime}</p>
+          <h1 className="text-2xl font-bold">Cozy Apocalypse</h1>
+          <p className="text-gray-300">Day {Math.floor(gameTime / 24)} - Time: {gameTime % 24} hours</p>
         </div>
-        <div className="text-right">
-          <p className="text-sm">
-            {survivors.filter(s => s.life > 0).length} survivors
-          </p>
-          <p className="text-sm text-gray-300">
-            {survivors.filter(s => s.life <= 0).length} deceased
-          </p>
+        <div className="flex space-x-4">
+          <div className="text-right">
+            <p className="text-sm">Food: {resources[0].amount}</p>
+            <p className="text-sm">Medicine: {resources[1].amount}</p>
+            <p className="text-sm">Morale: {resources[2].amount}</p>
+          </div>
         </div>
       </div>
 
@@ -623,106 +770,156 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Center Column - Journey View */}
+        {/* Center Column - Map */}
         <div className="lg:col-span-1">
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
-            <h2 className="text-xl font-semibold mb-3">Journey</h2>
+            <h2 className="text-xl font-semibold mb-3">Map</h2>
             
-            <div className="bg-gray-700 rounded-lg p-4 mb-4">
-              <div className="text-center mb-3">
-                <h3 className="text-lg font-bold">{currentLocation}</h3>
-              </div>
+            <div className="relative bg-gray-900 rounded-lg h-[500px] border border-gray-700 overflow-hidden">
+              {/* Roads */}
+              {mapNodes.map(node => (
+                node.connectedNodes.map(connectedId => {
+                  const connectedNode = mapNodes.find(n => n.id === connectedId);
+                  if (!connectedNode) return null;
+                  
+                  return (
+                    <svg key={`${node.id}-${connectedId}`} className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                      <line 
+                        x1={`${node.x}%`} 
+                        y1={`${node.y}%`} 
+                        x2={`${connectedNode.x}%`} 
+                        y2={`${connectedNode.y}%`} 
+                        stroke="#6b7280" 
+                        strokeWidth="2" 
+                        strokeDasharray="5,5"
+                      />
+                    </svg>
+                  );
+                })
+              ))}
               
-              <div className="space-y-4">
-                {survivors.map(survivor => (
-                  <div key={survivor.id} className="bg-gray-600 rounded-lg p-3">
-                    <div className="flex justify-between mb-1">
-                      <span className="font-medium">{survivor.name}</span>
-                      <span>{survivor.distanceToDestination} days</span>
-                    </div>
-                    <div className="w-full bg-gray-500 rounded-full h-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full" 
-                        style={{ width: `${calculateJourneyProgress(survivor)}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-300 mt-1">{survivor.destination}</p>
+              {/* Nodes */}
+              {mapNodes.map(node => (
+                <button
+                  key={node.id}
+                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center ${
+                    node.name === currentLocation 
+                      ? 'bg-blue-600 border-2 border-blue-400 ring-2 ring-blue-500' 
+                      : node.discovered 
+                        ? node.visited 
+                          ? 'bg-gray-700 hover:bg-gray-600 border border-gray-500' 
+                          : 'bg-gray-800 hover:bg-gray-700 border border-gray-600'
+                        : 'bg-gray-900 border border-gray-700 opacity-50 cursor-not-allowed'
+                  }`}
+                  style={{ left: `${node.x}%`, top: `${node.y}%`, width: '40px', height: '40px' }}
+                  onClick={() => {
+                    if (node.discovered && node.name !== currentLocation) {
+                      setSelectedDestination(node.name);
+                    }
+                  }}
+                  disabled={!node.discovered}
+                >
+                  {node.discovered ? (
+                    <span className="text-xs font-bold">{node.name.charAt(0)}</span>
+                  ) : (
+                    <span className="text-xs">???</span>
+                  )}
+                </button>
+              ))}
+              
+              {/* Current location indicator */}
+              {currentNode && (
+                <div 
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center"
+                  style={{ left: `${currentNode.x}%`, top: `${currentNode.y - 5}%` }}
+                >
+                  <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
+                    <p className="text-sm font-bold">{currentLocation}</p>
                   </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <h2 className="text-xl font-semibold mb-3">Actions</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <button 
-                  onClick={handleExplore}
-                  className="bg-blue-900 hover:bg-blue-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-                >
-                  Explore
-                </button>
-                <button 
-                  onClick={handleTravel}
-                  className="bg-green-900 hover:bg-green-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-                >
-                  Travel
-                </button>
-                <button 
-                  onClick={handleTalk}
-                  className="bg-purple-900 hover:bg-purple-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-                >
-                  Talk
-                </button>
-                <button 
-                  onClick={handleRest}
-                  className="bg-yellow-900 hover:bg-yellow-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
-                >
-                  Rest
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Memories and Story Feed */}
-        <div className="lg:col-span-1">
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
-            <h2 className="text-xl font-semibold mb-3">Memories</h2>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto mb-6">
-              {memories.length > 0 ? (
-                memories.map(memory => (
-                  <div 
-                    key={memory.id} 
-                    className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm"
-                  >
-                    <p>{memory.description}</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {new Date(memory.timestamp).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-400 text-center py-4">No memories yet</p>
+                </div>
               )}
             </div>
             
-            <h2 className="text-xl font-semibold mb-3">Story Feed</h2>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto">
-              {gameLog.map(entry => (
-                <div 
-                  key={entry.id} 
-                  className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm"
-                >
-                  <p>{entry.message}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+            {/* Selected destination indicator */}
+            {selectedDestination && (
+              <div className="mt-3 bg-gray-700 rounded-lg p-3 border border-gray-600">
+                <p className="text-sm">Selected: {selectedDestination}</p>
+                <p className="text-xs text-gray-300 mt-1">Click Travel to move here</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column - Location Details */}
+        <div className="lg:col-span-1">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full">
+            <h2 className="text-xl font-semibold mb-3">Location</h2>
+            
+            {currentNode ? (
+              <>
+                <h3 className="text-lg font-bold mb-2">{currentNode.name}</h3>
+                <p className="text-gray-300 mb-4">{currentNode.description}</p>
+                
+                <div className="mb-4">
+                  <h4 className="font-semibold mb-2">Story Events</h4>
+                  {currentStoryEvent ? (
+                    <div className="bg-gray-700 rounded-lg p-3 border border-gray-600 text-sm">
+                      <p>{currentStoryEvent}</p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-400 text-sm">No events yet</p>
+                  )}
                 </div>
-              ))}
-            </div>
+                
+                <div className="mb-4">
+                  <h4 className="font-semibold mb-2">Destination</h4>
+                  <p className="text-gray-300">{survivors.find(s => s.name === currentLocation)?.destination || 'No destination'}</p>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-400">Select a location on the map</p>
+            )}
           </div>
         </div>
       </main>
+
+      {/* Bottom Action Bar */}
+      <div className="max-w-7xl mx-auto mt-6">
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <button 
+              onClick={handleExplore}
+              className="bg-blue-900 hover:bg-blue-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
+            >
+              Explore
+            </button>
+            <button 
+              onClick={handleTravel}
+              className="bg-green-900 hover:bg-green-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
+            >
+              Travel
+            </button>
+            <button 
+              onClick={handleTalk}
+              className="bg-purple-900 hover:bg-purple-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
+            >
+              Talk
+            </button>
+            <button 
+              onClick={handleRest}
+              className="bg-yellow-900 hover:bg-yellow-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
+            >
+              Rest
+            </button>
+            <button 
+              onClick={handleEndTime}
+              className="bg-red-900 hover:bg-red-800 text-white py-3 px-4 rounded-lg transition-colors border border-gray-700"
+            >
+              End Time
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Event Modal */}
       {showEventModal && currentEvent && (
