@@ -181,6 +181,11 @@ export default function Home() {
     setCurrentStoryEvent(events[Math.floor(Math.random() * events.length)]);
   };
 
+  // New function to select a destination
+  const handleSelectDestination = (destination: string) => {
+    setSelectedDestination(destination);
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-slate-950 text-white flex flex-col p-4 gap-3">
       {/* Top Bar */}
@@ -431,7 +436,18 @@ export default function Home() {
           Explore
         </button>
         <button 
-          onClick={handleTravel}
+          onClick={() => {
+            // Show destination selection when Travel is clicked
+            const destinations = survivors.map(s => s.destination);
+            const uniqueDestinations = [...new Set(destinations)];
+            
+            // Create a temporary UI to select destination
+            if (uniqueDestinations.length > 0) {
+              // In a real implementation, this would show a dropdown or modal
+              // For now, we'll just select the first one for demonstration
+              handleSelectDestination(uniqueDestinations[0]);
+            }
+          }}
           className="action-button"
         >
           Travel
