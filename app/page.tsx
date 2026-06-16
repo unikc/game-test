@@ -133,8 +133,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'camp',
     name: 'Camp',
-    x: 50,
-    y: 50,
+    x: 400,
+    y: 300,
     description: 'Your base of operations. A small shelter built from scavenged materials.',
     discovered: true,
     visited: true,
@@ -147,8 +147,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'forest',
     name: 'North Forest',
-    x: 20,
-    y: 30,
+    x: 250,
+    y: 200,
     description: 'A dense forest with tall trees and thick undergrowth. The air is thick with mystery.',
     discovered: false,
     visited: false,
@@ -161,8 +161,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'town',
     name: 'Abandoned Town',
-    x: 80,
-    y: 30,
+    x: 550,
+    y: 200,
     description: 'A once-bustling town now silent and empty. Buildings stand in ruins.',
     discovered: false,
     visited: false,
@@ -175,8 +175,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'hospital',
     name: 'Hospital',
-    x: 20,
-    y: 70,
+    x: 250,
+    y: 400,
     description: 'A crumbling hospital building with broken windows and a faded sign.',
     discovered: false,
     visited: false,
@@ -190,8 +190,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'school',
     name: 'Old School',
-    x: 80,
-    y: 70,
+    x: 550,
+    y: 400,
     description: 'An old school building with broken windows and a faded sign.',
     discovered: false,
     visited: false,
@@ -205,8 +205,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'farm',
     name: 'Farm',
-    x: 50,
-    y: 90,
+    x: 400,
+    y: 500,
     description: 'An abandoned farm with overgrown fields and broken fences.',
     discovered: false,
     visited: false,
@@ -220,8 +220,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'riverside',
     name: 'Riverside',
-    x: 20,
-    y: 90,
+    x: 250,
+    y: 500,
     description: 'A quiet riverside with a small bridge and clear water.',
     discovered: false,
     visited: false,
@@ -235,8 +235,8 @@ const initialMapNodes: MapNode[] = [
   {
     id: 'harbor',
     name: 'Harbor',
-    x: 20,
-    y: 10,
+    x: 700,
+    y: 450,
     description: 'A quiet harbor with boats and a lighthouse.',
     discovered: false,
     visited: false,
@@ -786,10 +786,10 @@ export default function Home() {
                     style={{ zIndex: 1 }}
                   >
                     <line 
-                      x1={`${node.x}%`} 
-                      y1={`${node.y}%`} 
-                      x2={`${connectedNode.x}%`} 
-                      y2={`${connectedNode.y}%`} 
+                      x1={node.x} 
+                      y1={node.y} 
+                      x2={connectedNode.x} 
+                      y2={connectedNode.y} 
                       stroke="#6b7280" 
                       strokeWidth="2" 
                       strokeDasharray="5,5"
@@ -807,7 +807,7 @@ export default function Home() {
                   node.name === currentLocation ? 'current' : 
                   node.discovered ? (node.visited ? 'visited' : 'discovered') : 'undiscovered'
                 }`}
-                style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                style={{ left: `${node.x}px`, top: `${node.y}px` }}
                 onClick={() => {
                   if (node.discovered && node.name !== currentLocation) {
                     setSelectedDestination(node.name);
@@ -827,7 +827,7 @@ export default function Home() {
             {currentNode && (
               <div 
                 className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center"
-                style={{ left: `${currentNode.x}%`, top: `${currentNode.y - 5}%` }}
+                style={{ left: `${currentNode.x}px`, top: `${currentNode.y - 50}px` }}
               >
                 <div className="bg-gray-800 rounded-lg p-2 border border-gray-600">
                   <p className="text-sm font-bold">{currentLocation}</p>
